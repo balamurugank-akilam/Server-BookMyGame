@@ -13,11 +13,11 @@ services:
       - mssql
     environment:
       - DJANGO_SETTINGS_MODULE=bookmygame.settings
-      - MSSQL_HOST=mssql
+      - MSSQL_HOST=103.185.75.196
       - MSSQL_PORT=1433
-      - MSSQL_DB=bookmygame_db
+      - MSSQL_DB=BookingMyGame
       - MSSQL_USER=sa
-      - MSSQL_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PASSWORD=prime_123$
 
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
