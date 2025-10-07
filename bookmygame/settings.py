@@ -155,7 +155,8 @@ DATABASES = {
         'NAME': 'BookingMyGame',
         'USER': 'sa',
         'PASSWORD': 'prime_123$',
-        'HOST': 'akilam-server',   # or server\instance_name
+        'HOST': '103.185.75.196',
+        #'HOST': 'akilam-server',# or server\instance_name
         'PORT': '1433',
 
         'OPTIONS': {

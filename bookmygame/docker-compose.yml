@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    container_name: bookmygame_web
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mssql
+    environment:
+      - DJANGO_SETTINGS_MODULE=bookmygame.settings
+      - MSSQL_HOST=103.185.75.196
+      - MSSQL_PORT=1433
+      - MSSQL_DB=BookingMyGame
+      - MSSQL_USER=sa
+      - MSSQL_PASSWORD=prime_123$
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: bookmygame_mssql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=prime_123$$
+      ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+volumes:
+  mssql_data:
