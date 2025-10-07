@@ -8,7 +8,7 @@ from rest_framework import status
 
 def create_jwt(payload):
     payload = payload.copy()
-    payload['exp'] = datetime.utcnow() + timedelta(hours=1)
+    payload['exp'] = datetime.utcnow() + timedelta(days=730)
     payload['iat'] = datetime.utcnow()
     return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 

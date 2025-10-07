@@ -64,20 +64,20 @@ class UserMaster(models.Model):
 
 
 
-class SportCategory(models.Model):
-    category_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=250, null=False, blank=False)
-    flag = models.BooleanField(default=False)
-    image = models.ImageField(upload_to='assets/images', default='')
+# class SportCategory(models.Model):
+#     category_id = models.AutoField(primary_key=True)
+#     name = models.CharField(max_length=250, null=False, blank=False)
+#     flag = models.BooleanField(default=False)
+#     image = models.ImageField(upload_to='assets/images', default='')
     
-    class Meta:
-        db_table = 'SportCategory'
-        managed = True
-        verbose_name = 'SportCategory'
-        verbose_name_plural = 'SportCategory'
+#     class Meta:
+#         db_table = 'SportCategory'
+#         managed = True
+#         verbose_name = 'SportCategory'
+#         verbose_name_plural = 'SportCategory'
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
     
     
 

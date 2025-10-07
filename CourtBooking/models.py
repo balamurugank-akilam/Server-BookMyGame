@@ -1,22 +1,49 @@
 from django.db import models
 from django.utils import timezone
-from api.models import UserMaster,SportCategory
+from api.models import UserMaster
 
-# Assuming you have a Location model
-class Sport(models.Model):
-    sport_Id = models.AutoField(primary_key=True, db_column='sport_Id')
-    category = models.ForeignKey(
-        SportCategory, 
-        db_column='name', 
-        to_field='category_id',   # explicit reference to the correct PK
-        on_delete=models.CASCADE
-    )
+# Table: BookingMyGame.dbo.SportCategory
+class SportCategory(models.Model):
+    category_id = models.AutoField(primary_key=True, db_column='category_id')
+    name = models.CharField(max_length=255, db_column='name')
+    flag = models.BooleanField(default=True, db_column='flag')  # adjust type if needed
 
     class Meta:
-        db_table = 'sport_Master'
+        db_table = 'SportCategory'  # dbo.SportCategory in BookingMyGame database
 
     def __str__(self):
-        return str(self.category)
+        return self.name
+
+
+class SportMaster(models.Model):
+    sport_id = models.AutoField(primary_key=True, db_column='sport_Id')
+    category = models.ForeignKey(
+        SportCategory,
+        on_delete=models.CASCADE,
+        db_column='category_id',
+        related_name='sports'
+    )
+    name = models.CharField(max_length=255, db_column='name')
+    flag = models.BooleanField(default=True, db_column='flag')  # adjust type if needed
+    image = models.ImageField(upload_to='assets/images/', null=True, blank=True, db_column='image')
+
+    class Meta:
+        db_table = 'sport_Master'  # dbo.sport_Master in BookingMyGame database
+
+    def __str__(self):
+        return self.name
+    
+    
+class CourtType(models.Model):
+    court_type_id = models.AutoField(primary_key=True, db_column='court_type_id')
+    court_type = models.CharField(max_length=255, db_column='court_type')
+
+    class Meta:
+        db_table = 'court_type'  # matches your SQL Server table
+        managed = False  # Set to False if table already exists in the database
+
+    def __str__(self):
+        return self.court_type
 
 class LocationMaster(models.Model):
     location_Id = models.AutoField(primary_key=True, db_column='location_Id')
@@ -29,7 +56,7 @@ class LocationMaster(models.Model):
     name = models.CharField(max_length=255, db_column='name')
 
     # Foreign Keys
-    sport = models.ForeignKey(Sport, on_delete=models.SET_NULL, null=True, blank=True, db_column='sport_Id')
+    sport = models.ForeignKey(SportMaster, on_delete=models.SET_NULL, null=True, blank=True, db_column='sport_Id')
     reg_Id = models.IntegerField(db_column='reg_Id', blank=True, null=True)
     merchantid = models.CharField(max_length=255, db_column='merchantid', blank=True, null=True)
     upi = models.CharField(max_length=255, db_column='upi', blank=True, null=True)
@@ -62,7 +89,8 @@ class CourtMaster(models.Model):
     user = models.ForeignKey(UserMaster, on_delete=models.CASCADE, db_column='user_Id')
 
     flag = models.BooleanField(default=True, db_column='flag')
-
+    court_type = models.ForeignKey('CourtType', on_delete=models.CASCADE, db_column='court_type_id',)
+    ratings = models.FloatField(default=0.0, null=True , blank=True,db_column='ratings')
     class Meta:
         db_table = 'court_Master'
 

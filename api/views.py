@@ -3,8 +3,8 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view ,APIView
 from rest_framework.response import Response
 from api.utils import create_user_tokens,get_user_from_token
-from .models import SportCategory,UserMaster
-from .serializers import SportsCategorySerializer , UserSerializer
+from .models import UserMaster
+from .serializers import  UserSerializer
 from rest_framework import status
 
 class UserLogin(APIView):
@@ -55,20 +55,20 @@ class UserLogin(APIView):
 
 # @authentication_classes([CustomJWTAuthentication])
 # @permission_classes([IsAuthenticated])
-class SportsCategoryView(APIView):
+# class SportsCategoryView(APIView):
    
-     def get(self, request):
-        user, error_response = get_user_from_token(request)
-        if error_response:
-            return error_response
+#      def get(self, request):
+#         user, error_response = get_user_from_token(request)
+#         if error_response:
+#             return error_response
         
-        categories = SportCategory.objects.all()
-        serialized_data = SportsCategorySerializer(categories, many=True)
-        return Response({
-            "data": serialized_data.data,
-            "status": "success",
-            "statusCode": status.HTTP_200_OK
-        })
+#         categories = SportCategory.objects.all()
+#         serialized_data = SportsCategorySerializer(categories, many=True)
+#         return Response({
+#             "data": serialized_data.data,
+#             "status": "success",
+#             "statusCode": status.HTTP_200_OK
+#         })
     
 
 

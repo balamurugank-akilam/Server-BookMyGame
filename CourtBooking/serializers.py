@@ -1,222 +1,233 @@
 from rest_framework import serializers
-from .models import Sport, LocationMaster, CourtMaster, SlotMaster, BookingMaster
-from api.models import UserMaster, SportCategory
+from .models import SportCategory, SportMaster, LocationMaster, CourtMaster, SlotMaster, BookingMaster , CourtType
+from api.models import UserMaster
 
 class SportCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = SportCategory
-        fields = ['category_id', 'name']  # Adjust fields based on your actual SportCategory model
+        fields = '__all__'
 
-class SportSerializer(serializers.ModelSerializer):
-    category = SportCategorySerializer(read_only=True)
-    category_id = serializers.PrimaryKeyRelatedField(
-        queryset=SportCategory.objects.all(), 
-        source='category', 
-        write_only=True
-    )
+class SportMasterSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
     
     class Meta:
-        model = Sport
-        fields = ['sport_Id', 'category', 'category_id']
-    
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        # You can customize the representation if needed
-        return representation
+        model = SportMaster
+        fields = '__all__'
+        extra_fields = ['category_name']
 
 class LocationMasterSerializer(serializers.ModelSerializer):
-    sport = SportSerializer(read_only=True)
-    sport_Id = serializers.PrimaryKeyRelatedField(
-        queryset=Sport.objects.all(), 
-        source='sport', 
-        write_only=True, 
-        required=False, 
-        allow_null=True
-    )
-    
-    grpLocation = serializers.StringRelatedField(read_only=True)
-    grpLocation_Id = serializers.PrimaryKeyRelatedField(
-        queryset=LocationMaster.objects.all(), 
-        source='grpLocation', 
-        write_only=True, 
-        required=False, 
-        allow_null=True
-    )
+    sport_name = serializers.CharField(source='sport.name', read_only=True)
+    grpLocation_name = serializers.CharField(source='grpLocation.name', read_only=True)
     
     class Meta:
         model = LocationMaster
-        fields = [
-            'location_Id', 'street', 'mobile', 'city', 'state', 'pincode', 
-            'flag', 'name', 'sport', 'sport_Id', 'reg_Id', 'merchantid', 
-            'upi', 'convenience_Fees', 'grpLocation', 'grpLocation_Id'
-        ]
-        read_only_fields = ['location_Id']
+        fields = '__all__'
+        extra_fields = ['sport_name', 'grpLocation_name']
+        
+class CourtTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourtType
+        fields = ['court_type_id', 'court_type']
 
 class CourtMasterSerializer(serializers.ModelSerializer):
-    location = LocationMasterSerializer(read_only=True)
-    location_Id = serializers.PrimaryKeyRelatedField(
-        queryset=LocationMaster.objects.all(), 
-        source='location', 
-        write_only=True
-    )
-    
-    user = serializers.StringRelatedField(read_only=True)
-    user_Id = serializers.PrimaryKeyRelatedField(
-        queryset=UserMaster.objects.all(), 
-        source='user', 
-        write_only=True
-    )
+    location_name = serializers.CharField(source='location.name', read_only=True)
+    user_details = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = CourtMaster
-        fields = [
-            'court_Id', 'court_Name', 'court_Count', 'coach_Count', 'url',
-            'duration', 'starttime', 'endtime', 'peakhours', 'nonpeakhours',
-            'location', 'location_Id', 'user', 'user_Id', 'flag'
-        ]
-        read_only_fields = ['court_Id']
+        fields = '__all__'
+        extra_fields = ['location_name', 'user_details']
+    
+    def get_user_details(self, obj):
+        if obj.user:
+            return {
+                'user_id': obj.user.reg_id,
+                'mobile': obj.user.mobile,
+                'name': obj.user.name
+            }
+        return None
 
 class SlotMasterSerializer(serializers.ModelSerializer):
-    court = CourtMasterSerializer(read_only=True)
-    court_Id = serializers.PrimaryKeyRelatedField(
-        queryset=CourtMaster.objects.all(), 
-        source='court', 
-        write_only=True
-    )
-    
-    created_By = serializers.StringRelatedField(read_only=True)
-    updated_By = serializers.StringRelatedField(read_only=True)
-    
-    created_By_Id = serializers.PrimaryKeyRelatedField(
-        queryset=UserMaster.objects.all(), 
-        source='created_By', 
-        write_only=True, 
-        required=False, 
-        allow_null=True
-    )
-    
-    updated_By_Id = serializers.PrimaryKeyRelatedField(
-        queryset=UserMaster.objects.all(), 
-        source='updated_By', 
-        write_only=True, 
-        required=False, 
-        allow_null=True
-    )
-    
-    days_of_week = serializers.SerializerMethodField()
+    court_name = serializers.CharField(source='court.court_Name', read_only=True)
+    created_by_name = serializers.CharField(source='created_By.name', read_only=True)
+    updated_by_name = serializers.CharField(source='updated_By.name', read_only=True)
     
     class Meta:
         model = SlotMaster
-        fields = [
-            'slot_Id', 'court', 'court_Id', 'slot_Name', 'IsPeak', 'IsActive',
-            'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'days_of_week',
-            'created_By', 'created_By_Id', 'created_Date', 'updated_By', 
-            'updated_By_Id', 'updated_Date'
-        ]
-        read_only_fields = ['slot_Id', 'created_Date', 'updated_Date']
-    
-    def get_days_of_week(self, obj):
-        """Returns list of active days"""
-        days = []
-        if obj.Mon: days.append('Monday')
-        if obj.Tue: days.append('Tuesday')
-        if obj.Wed: days.append('Wednesday')
-        if obj.Thu: days.append('Thursday')
-        if obj.Fri: days.append('Friday')
-        if obj.Sat: days.append('Saturday')
-        if obj.Sun: days.append('Sunday')
-        return days
+        fields = '__all__'
+        extra_fields = ['court_name', 'created_by_name', 'updated_by_name']
 
 class BookingMasterSerializer(serializers.ModelSerializer):
-    slot = SlotMasterSerializer(read_only=True)
-    slot_Id = serializers.PrimaryKeyRelatedField(
-        queryset=SlotMaster.objects.all(), 
-        source='slot', 
-        write_only=True
-    )
-    
-    court = CourtMasterSerializer(read_only=True)
-    court_Id = serializers.PrimaryKeyRelatedField(
-        queryset=CourtMaster.objects.all(), 
-        source='court', 
-        write_only=True
-    )
-    
-    user = serializers.StringRelatedField(read_only=True)
-    mobile = serializers.PrimaryKeyRelatedField(
-        queryset=UserMaster.objects.all(), 
-        source='user', 
-        write_only=True, 
-        required=False, 
-        allow_null=True
-    )
-    
-    modified_By = serializers.StringRelatedField(read_only=True)
-    modified_By_Id = serializers.PrimaryKeyRelatedField(
-        queryset=UserMaster.objects.all(), 
-        source='modified_By', 
-        write_only=True, 
-        required=False, 
-        allow_null=True
-    )
-    
-    # Calculated fields
-    total_discount = serializers.SerializerMethodField()
-    payment_status = serializers.SerializerMethodField()
+    slot_details = serializers.SerializerMethodField(read_only=True)
+    court_details = serializers.SerializerMethodField(read_only=True)
+    user_details = serializers.SerializerMethodField(read_only=True)
+    modified_by_name = serializers.CharField(source='modified_By.name', read_only=True)
     
     class Meta:
         model = BookingMaster
-        fields = [
-            'book_Id', 'book_Date', 'slot', 'slot_Id', 'court', 'court_Id',
-            'user', 'mobile', 'slot_Name', 'reg_Id', 'discount', 'discount_Amt',
-            'actual_Amt', 'final_Amt', 'payment_Id', 'flag', 'created_Date',
-            'modified_By', 'modified_By_Id', 'modified_Date', 'total_discount',
-            'payment_status'
-        ]
-        read_only_fields = ['book_Id', 'created_Date', 'modified_Date']
+        fields = '__all__'
+        extra_fields = ['slot_details', 'court_details', 'user_details', 'modified_by_name']
     
-    def get_total_discount(self, obj):
-        """Calculate total discount percentage"""
-        if obj.actual_Amt > 0:
-            return (obj.discount_Amt / obj.actual_Amt) * 100
-        return 0
+    def get_slot_details(self, obj):
+        if obj.slot:
+            return {
+                'slot_id': obj.slot.slot_Id,
+                'slot_name': obj.slot.slot_Name,
+                'is_peak': obj.slot.IsPeak
+            }
+        return None
     
-    def get_payment_status(self, obj):
-        """Determine payment status based on payment_Id"""
-        return "Paid" if obj.payment_Id else "Pending"
+    def get_court_details(self, obj):
+        if obj.court:
+            return {
+                'court_id': obj.court.court_Id,
+                'court_name': obj.court.court_Name,
+                'location_id': obj.court.location.location_Id if obj.court.location else None,
+                'location_name': obj.court.location.name if obj.court.location else None
+            }
+        return None
     
-    def validate(self, data):
-        """Custom validation for booking"""
-        # Ensure booking date is not in the past
-        if data.get('book_Date') and data['book_Date'] < timezone.now().date():
-            raise serializers.ValidationError("Booking date cannot be in the past")
-        
-        # Ensure final amount calculation is correct
-        if data.get('actual_Amt') and data.get('discount_Amt'):
-            calculated_final_amt = data['actual_Amt'] - data['discount_Amt']
-            if data.get('final_Amt') != calculated_final_amt:
-                raise serializers.ValidationError("Final amount calculation is incorrect")
-        
-        return data
+    def get_user_details(self, obj):
+        if obj.user:
+            return {
+                'user_id': obj.user.user_id,
+                'mobile': obj.user.mobile,
+                'name': obj.user.name
+            }
+        return None
 
 # Nested serializers for detailed views
-class CourtDetailSerializer(CourtMasterSerializer):
-    """Extended Court serializer with slots"""
-    slots = SlotMasterSerializer(many=True, read_only=True, source='slotmaster_set')
+class SportMasterDetailSerializer(serializers.ModelSerializer):
+    category = SportCategorySerializer(read_only=True)
     
-    class Meta(CourtMasterSerializer.Meta):
-        fields = CourtMasterSerializer.Meta.fields + ['slots']
+    class Meta:
+        model = SportMaster
+        fields = '__all__'
 
-class LocationDetailSerializer(LocationMasterSerializer):
-    """Extended Location serializer with courts"""
-    courts = CourtMasterSerializer(many=True, read_only=True, source='courtmaster_set')
+class LocationMasterDetailSerializer(serializers.ModelSerializer):
+    sport = SportMasterSerializer(read_only=True)
+    grpLocation = LocationMasterSerializer(read_only=True)
     
-    class Meta(LocationMasterSerializer.Meta):
-        fields = LocationMasterSerializer.Meta.fields + ['courts']
+    class Meta:
+        model = LocationMaster
+        fields = '__all__'
 
-class SlotDetailSerializer(SlotMasterSerializer):
-    """Extended Slot serializer with bookings"""
-    bookings = BookingMasterSerializer(many=True, read_only=True, source='bookingmaster_set')
+class CourtMasterDetailSerializer(serializers.ModelSerializer):
+    location = LocationMasterSerializer(read_only=True)
+    user = serializers.SerializerMethodField()
     
-    class Meta(SlotMasterSerializer.Meta):
-        fields = SlotMasterSerializer.Meta.fields + ['bookings']
+    class Meta:
+        model = CourtMaster
+        fields = '__all__'
+    
+    def get_user(self, obj):
+        if obj.user:
+            return {
+                'user_id': obj.user.reg_id,
+                'mobile': obj.user.mobile,
+                'name': obj.user.name
+            }
+        return None
+
+class SlotMasterDetailSerializer(serializers.ModelSerializer):
+    court = CourtMasterSerializer(read_only=True)
+    created_By = serializers.SerializerMethodField()
+    updated_By = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = SlotMaster
+        fields = '__all__'
+    
+    def get_created_By(self, obj):
+        if obj.created_By:
+            return {
+                'user_id': obj.created_By.user_id,
+                'mobile': obj.created_By.mobile,
+                'name': obj.created_By.name
+            }
+        return None
+    
+    def get_updated_By(self, obj):
+        if obj.updated_By:
+            return {
+                'user_id': obj.updated_By.user_id,
+                'mobile': obj.updated_By.mobile,
+                'name': obj.updated_By.name
+            }
+        return None
+
+class BookingMasterDetailSerializer(serializers.ModelSerializer):
+    slot = SlotMasterSerializer(read_only=True)
+    court = CourtMasterSerializer(read_only=True)
+    user = serializers.SerializerMethodField()
+    modified_By = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = BookingMaster
+        fields = '__all__'
+    
+    def get_user(self, obj):
+        if obj.user:
+            return {
+                'user_id': obj.user.user_id,
+                'mobile': obj.user.mobile,
+                'name': obj.user.name
+            }
+        return None
+    
+    def get_modified_By(self, obj):
+        if obj.modified_By:
+            return {
+                'user_id': obj.modified_By.user_id,
+                'mobile': obj.modified_By.mobile,
+                'name': obj.modified_By.name
+            }
+        return None
+
+# Create/Update serializers with validation
+class SlotMasterCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SlotMaster
+        fields = '__all__'
+    
+    def validate(self, data):
+        # Validate that at least one day is selected
+        days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        day_selected = any(data.get(day) for day in days)
+        if not day_selected:
+            raise serializers.ValidationError("At least one day must be selected.")
+        return data
+
+class BookingMasterCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookingMaster
+        exclude = ['created_Date', 'modified_Date']
+    
+    def validate(self, data):
+        # Add booking validation logic here
+        # Example: Check if slot is available for the given date
+        return data
+
+# List serializers for optimized queries
+class SportCategoryListSerializer(serializers.ModelSerializer):
+    sports_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = SportCategory
+        fields = ['category_id', 'name', 'flag', 'sports_count']
+    
+    def get_sports_count(self, obj):
+        return obj.sports.count()
+
+class LocationMasterListSerializer(serializers.ModelSerializer):
+    sport_name = serializers.CharField(source='sport.name', read_only=True)
+    city_state = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = LocationMaster
+        fields = ['location_Id', 'name', 'city', 'state', 'sport_name', 'flag', 'city_state']
+    
+    def get_city_state(self, obj):
+        return f"{obj.city}, {obj.state}" if obj.city and obj.state else None
+    
+    
