@@ -1,18 +1,7 @@
-# Django framework
 Django==5.2.7
-
-# MSSQL database backend for Django
-mssql-django==1.5
-
-# ODBC driver for connecting to MSSQL
 pyodbc==5.1.0
-
-# Optional: useful utilities for Django projects
 djangorestframework==3.15.0
 django-cors-headers==4.4.0
-
-# Optional: for file uploads or image handling
 Pillow==10.0.0
-
-# Environment variable management (optional but recommended)
 python-dotenv==1.0.0
+gunicorn==21.2.0
