@@ -43,7 +43,8 @@ class CourtType(models.Model):
         managed = False  # Set to False if table already exists in the database
 
     def __str__(self):
-        return self.court_type
+        return self.court_type or f"CourtType {self.court_type_id}"
+
 
 class LocationMaster(models.Model):
     location_Id = models.AutoField(primary_key=True, db_column='location_Id')
@@ -95,7 +96,7 @@ class CourtMaster(models.Model):
         db_table = 'court_Master'
 
     def __str__(self):
-        return self.court_Name
+        return self.court_Name or f"Court {self.court_Id}"
 
 # Assuming CourtMaster model is already defined
 class SlotMaster(models.Model):
