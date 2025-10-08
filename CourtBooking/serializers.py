@@ -115,6 +115,7 @@ class LocationMasterDetailSerializer(serializers.ModelSerializer):
 class CourtMasterDetailSerializer(serializers.ModelSerializer):
     location = LocationMasterSerializer(read_only=True)
     user = serializers.SerializerMethodField()
+    court_type = CourtTypeSerializer()
     
     class Meta:
         model = CourtMaster
@@ -184,50 +185,42 @@ class BookingMasterDetailSerializer(serializers.ModelSerializer):
             }
         return None
 
-# Create/Update serializers with validation
-class SlotMasterCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SlotMaster
-        fields = '__all__'
-    
-    def validate(self, data):
-        # Validate that at least one day is selected
-        days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-        day_selected = any(data.get(day) for day in days)
-        if not day_selected:
-            raise serializers.ValidationError("At least one day must be selected.")
-        return data
 
-class BookingMasterCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BookingMaster
-        exclude = ['created_Date', 'modified_Date']
-    
-    def validate(self, data):
-        # Add booking validation logic here
-        # Example: Check if slot is available for the given date
-        return data
+class CourtListSerializer(serializers.ModelSerializer):
+    court_type = serializers.CharField(source='court_type.court_type')
+    timings = serializers.SerializerMethodField()
 
-# List serializers for optimized queries
-class SportCategoryListSerializer(serializers.ModelSerializer):
-    sports_count = serializers.SerializerMethodField()
-    
     class Meta:
-        model = SportCategory
-        fields = ['category_id', 'name', 'flag', 'sports_count']
-    
-    def get_sports_count(self, obj):
-        return obj.sports.count()
+        model = CourtMaster
+        fields = [
+            'court_Id', 'court_type', 'court_Name', 'court_Count',
+            'peakhours', 'nonpeakhours', 'ratings', 'timings'
+        ]
 
-class LocationMasterListSerializer(serializers.ModelSerializer):
-    sport_name = serializers.CharField(source='sport.name', read_only=True)
-    city_state = serializers.SerializerMethodField()
+    def get_timings(self, obj):
+        start = obj.starttime[:5]  # "HH:MM:SS" -> "HH:MM"
+        end = obj.endtime[:5]
+        return f"{start} - {end}"
+
+
+class LocationWithCourtsSerializer(serializers.Serializer):
+    venue = serializers.CharField(source='location.name')
+    address = serializers.SerializerMethodField()
+    contact = serializers.CharField(source='location.mobile')
+    courts = serializers.SerializerMethodField()
+
+    def get_address(self, obj):
+        loc = obj.location
+        return f"{loc.street}, {loc.city}, {loc.state} - {loc.pincode}"
+
+    def get_courts(self, obj):
+        courts = CourtMaster.objects.filter(location=obj.location, flag=True)
+        return CourtListSerializer(courts, many=True).data
+
+
+
+
     
-    class Meta:
-        model = LocationMaster
-        fields = ['location_Id', 'name', 'city', 'state', 'sport_name', 'flag', 'city_state']
-    
-    def get_city_state(self, obj):
-        return f"{obj.city}, {obj.state}" if obj.city and obj.state else None
+
     
     
