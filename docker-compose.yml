@@ -6,7 +6,7 @@ services:
     container_name: bookmygame_web
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - app_data:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -18,6 +18,8 @@ services:
       - MSSQL_DB=BookingMyGame
       - MSSQL_USER=sa
       - MSSQL_PASSWORD=prime_123$
+    networks:
+      - bookmygame_network
 
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -25,10 +27,18 @@ services:
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=prime_123$$
-      ports:
-      - "1433:1433"
+    ports:
+      - "1434:1433"
     volumes:
       - mssql_data:/var/opt/mssql
+    networks:
+      - bookmygame_network
 
 volumes:
+  app_data:
   mssql_data:
+
+networks:
+  bookmygame_network:
+    driver: bridge
+
