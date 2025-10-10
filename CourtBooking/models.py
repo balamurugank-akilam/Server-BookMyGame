@@ -97,6 +97,17 @@ class CourtMaster(models.Model):
 
     def __str__(self):
         return self.court_Name or f"Court {self.court_Id}"
+    
+    
+class SessionMaster(models.Model):
+    session_Id = models.AutoField(primary_key=True, db_column='session_Id')
+    session_name = models.CharField(max_length=100, db_column='session_name')
+
+    class Meta:
+        db_table = 'session_Master'
+
+    def __str__(self):
+        return self.session_name
 
 # Assuming CourtMaster model is already defined
 class SlotMaster(models.Model):
@@ -105,6 +116,7 @@ class SlotMaster(models.Model):
     slot_Name = models.CharField(max_length=255, db_column='slot_Name')
     IsPeak = models.BooleanField(default=False, db_column='IsPeak')
     IsActive = models.BooleanField(default=True, db_column='IsActive')
+    session_Id = models.ForeignKey('SessionMaster', on_delete=models.CASCADE, db_column='session_Id',blank=True)
 
     # Days of the week
     Mon = models.BooleanField(default=False, db_column='Mon')

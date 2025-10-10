@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework.decorators import APIView,api_view
 from rest_framework.response import Response
-from .serializers import CourtMasterSerializer, LocationWithCourtsSerializer , SportMasterSerializer,CourtMasterDetailSerializer
-from .models import CourtMaster
+from .serializers import CourtMasterSerializer, LocationWithCourtsSerializer , SportMasterSerializer,CourtMasterDetailSerializer,BookingMasterDetailSerializer,BookedSlotViewSerializer,SlotMasterSerializer
+from .models import CourtMaster,BookingMaster,SlotMaster
 from rest_framework import status
 from api.utils import get_user_from_token
 from .models import SportMaster , UserMaster
@@ -107,7 +107,11 @@ def CourtSeprateView(request, id):
         
 
 class CourtSelectionView(APIView):
+    
     def get(self, request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
         user_id = request.query_params.get('user' , None)
         location_city = request.query_params.get('location',None)
 
@@ -130,8 +134,10 @@ class CourtSelectionView(APIView):
                 if loc_id not in seen_locations:
                     first_courts.append(court)
                     seen_locations.add(loc_id)
+                
 
                     serializer = LocationWithCourtsSerializer(first_courts, many=True)
+                    print(first_courts);
                     
                 return Response({
                      "status": "success",
@@ -139,3 +145,60 @@ class CourtSelectionView(APIView):
                      "data":serializer.data,
                    
                     })
+
+
+class Slotview(APIView):
+    
+    def get(self, request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+        
+        # user_id = request.query_params.get('user' , None)
+        # location_Id = request.query_params.get('location_Id',None)
+        court_id = request.query_params.get('court_id', None)
+        # date = request.query_params.get('date', None)
+        
+        if  court_id is not None:
+            slot_view = SlotMaster.objects.filter(court__court_Id = court_id )
+            serialized_data = SlotMasterSerializer(slot_view , many = True)
+            
+            return Response({
+                     "status": "success",
+                     "statusCode": status.HTTP_200_OK,
+                     "data":serialized_data.data,
+                   
+                    })
+        
+        if court_id is None:
+                return Response({
+                "status": "failed",
+                "statusCode": status.HTTP_404_NOT_FOUND,
+                "data": "Court No Required"
+            })
+                
+                
+                
+class BookedSlotCheckView(APIView):
+    def get(self, request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+        court_id = request.query_params.get('court_id', None)
+        date = request.query_params.get('date', None)
+        if  court_id is not None:
+            booking = BookingMaster.objects.filter(court__court_Id = court_id , book_Date = date)
+            serialized_data = BookedSlotViewSerializer(booking , many = True)
+            return Response({
+                     "status": "success",
+                     "statusCode": status.HTTP_200_OK,
+                     "data":serialized_data.data,
+                   
+                    })
+        
+        if court_id is None:
+                return Response({
+                "status": "failed",
+                "statusCode": status.HTTP_404_NOT_FOUND,
+                "data": "Court No Required"
+            })
