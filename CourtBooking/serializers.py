@@ -172,7 +172,7 @@ class SlotMasterSerializer(serializers.ModelSerializer):
         
     def get_session_name(self, obj):
         return obj.session.session_name if obj.session else None
- # ✅ must match model field name
+
 
         
         

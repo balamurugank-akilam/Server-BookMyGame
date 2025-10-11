@@ -90,7 +90,7 @@ class CourtMaster(models.Model):
     user = models.ForeignKey(UserMaster, on_delete=models.CASCADE, db_column='user_Id')
 
     flag = models.BooleanField(default=True, db_column='flag')
-    court_type = models.ForeignKey('CourtType', on_delete=models.CASCADE, db_column='court_type_id',)
+    court_type = models.ForeignKey('CourtType', on_delete=models.CASCADE, db_column='court_type_id',default='Tennis')
     ratings = models.FloatField(default=0.0, null=True , blank=True,db_column='ratings')
     class Meta:
         db_table = 'court_Master'
@@ -116,7 +116,7 @@ class SlotMaster(models.Model):
     slot_Name = models.CharField(max_length=255, db_column='slot_Name')
     IsPeak = models.BooleanField(default=False, db_column='IsPeak')
     IsActive = models.BooleanField(default=True, db_column='IsActive')
-    session_Id = models.ForeignKey('SessionMaster', on_delete=models.CASCADE, db_column='session_Id',blank=True)
+    session_Id = models.ForeignKey('SessionMaster', on_delete=models.CASCADE, db_column='session_Id',blank=True, default='Morning')
 
     # Days of the week
     Mon = models.BooleanField(default=False, db_column='Mon')

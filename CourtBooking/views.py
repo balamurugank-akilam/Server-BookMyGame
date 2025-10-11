@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.decorators import APIView,api_view
 from rest_framework.response import Response
-from .serializers import CourtMasterSerializer, LocationWithCourtsSerializer , SportMasterSerializer,CourtMasterDetailSerializer,BookingMasterDetailSerializer,BookedSlotViewSerializer,SlotMasterSerializer
+from .serializers import CourtMasterSerializer, LocationWithCourtsSerializer , SportMasterSerializer,CourtMasterDetailSerializer,BookingMasterDetailSerializer,BookedSlotViewSerializer,SlotMasterSerializer,BookingMasterSerializer
 from .models import CourtMaster,BookingMaster,SlotMaster
 from rest_framework import status
 from api.utils import get_user_from_token
@@ -202,3 +202,40 @@ class BookedSlotCheckView(APIView):
                 "statusCode": status.HTTP_404_NOT_FOUND,
                 "data": "Court No Required"
             })
+                
+                
+    
+class CourtBookingSlot(APIView):
+    def post(self, request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+        court_id = request.query_params.get('court_id', None)
+        date = request.query_params.get('date', None)
+        slot = request.query_params.get('slot',None)
+        
+        already_booked = BookingMaster.objects.filter(slot__slotId=slot , book_Date = date , court__court_Id = court_id)
+        if already_booked.exists():
+            return Response({
+                "status": "failed",
+                "statusCode": status.HTTP_404_NOT_FOUND,
+                "data": "Slot has Already Booked"
+            })
+        else :
+            book_data = BookingMasterSerializer(data= request.data)
+            if book_data.is_valid():
+                book_data.save()
+                return Response({
+                     "status": "success",
+                     "statusCode": status.HTTP_200_OK,
+                     "data":book_data,
+                    })
+            return Response({
+                "status": "failed",
+                "statusCode": status.HTTP_404_NOT_FOUND,
+                "data": "Slot data missing"
+            })   
+               
+            
+                
+        
