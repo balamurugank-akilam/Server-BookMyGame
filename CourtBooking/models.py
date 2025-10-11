@@ -21,7 +21,8 @@ class SportMaster(models.Model):
         SportCategory,
         on_delete=models.CASCADE,
         db_column='category_id',
-        related_name='sports'
+        related_name='sports',
+        default=1
     )
     name = models.CharField(max_length=255, db_column='name')
     flag = models.BooleanField(default=True, db_column='flag')  # adjust type if needed
