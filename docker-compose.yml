@@ -26,7 +26,7 @@ services:
     container_name: bookmygame_mssql
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=prime_123$$
+      - MSSQL_SA_PASSWORD=prime_123$
     ports:
       - "1434:1433"
     volumes:
