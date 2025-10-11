@@ -3,7 +3,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view ,APIView
 from rest_framework.response import Response
 from api.utils import create_user_tokens,get_user_from_token
-from .models import UserMaster
+from .models import UserMaster 
 from .serializers import  UserSerializer
 from rest_framework import status
 
@@ -22,12 +22,13 @@ class UserLogin(APIView):
             # Try to find existing user by mobile
             user = UserMaster.objects.get(mobile=mobile)
             print(user.mobile)
-
+            serialized_data = UserSerializer(user)  # ✅ FIXED (removed many=True)
             token = create_user_tokens(user)
 
             return Response({
                 "data": "User logged in successfully",
                 "access": token,
+                "user": serialized_data.data,
                 "status": status.HTTP_200_OK
             })
 
@@ -36,13 +37,14 @@ class UserLogin(APIView):
             user_serializer = UserSerializer(data=request.data)
             if user_serializer.is_valid():
                 user = user_serializer.save()
+                serialized_data = UserSerializer(user)  # ✅ FIXED here too
                 print(user.mobile)
                 token = create_user_tokens(user)
 
                 return Response({
                     "data": "User created successfully",
                     "access": token,
-                   
+                    "user": serialized_data.data,
                     "status": status.HTTP_201_CREATED
                 })
             else:
@@ -52,6 +54,7 @@ class UserLogin(APIView):
                     "errors": user_serializer.errors,
                     "statusCode": status.HTTP_400_BAD_REQUEST
                 })
+
 
 # @authentication_classes([CustomJWTAuthentication])
 # @permission_classes([IsAuthenticated])

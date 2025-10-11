@@ -279,7 +279,7 @@ class BookingMasterSerializer(serializers.ModelSerializer):
     def get_user_details(self, obj):
         if obj.user:
             return {
-                'user_id': obj.user.user_id,
+                'user_id': obj.user.reg_id,
                 'mobile': obj.user.mobile,
                 'name': obj.user.name
             }
@@ -316,3 +316,51 @@ class BookingMasterDetailSerializer(serializers.ModelSerializer):
                 'name': obj.modified_By.name
             }
         return None
+    
+    
+class BookingMasterWriteSerializer(serializers.ModelSerializer):
+    slot = serializers.DictField(write_only=True)
+    court = serializers.DictField(write_only=True)
+    user = serializers.DictField(write_only=True)
+
+    class Meta:
+        model = BookingMaster
+        fields = [
+            'book_Date', 'slot', 'court', 'user',
+            'slot_Name', 'reg_Id', 'actual_Amt', 'discount_Amt'
+        ]
+
+    def validate(self, attrs):
+        # Extract IDs from nested objects
+        try:
+            attrs['slot_id'] = attrs.pop('slot')['slot_Id']
+            attrs['court_id'] = attrs.pop('court')['court_Id']
+            attrs['user_id'] = attrs.pop('user')['reg_id']
+        except KeyError:
+            raise serializers.ValidationError(
+                "Nested objects must include 'slot_Id', 'court_Id', and 'reg_id'."
+            )
+
+        # Check if slot is already booked
+        book_date = attrs.get('book_Date')
+        if BookingMaster.objects.filter(
+            slot_id=attrs['slot_id'],
+            court_id=attrs['court_id'],
+            book_Date=book_date
+        ).exists():
+            raise serializers.ValidationError("Slot has already been booked.")
+
+        return attrs
+
+    def create(self, validated_data):
+        # Remove nested objects (they have been mapped to *_id fields)
+        validated_data.pop('slot', None)
+        validated_data.pop('court', None)
+        validated_data.pop('user', None)
+
+        # Calculate final amount if discount is present
+        actual = validated_data.get('actual_Amt', 0)
+        discount = validated_data.get('discount_Amt', 0)
+        validated_data['final_Amt'] = actual - discount
+
+        return BookingMaster.objects.create(**validated_data)

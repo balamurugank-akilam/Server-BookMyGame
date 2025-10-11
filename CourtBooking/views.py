@@ -1,7 +1,9 @@
+from datetime import datetime
+
 from django.shortcuts import render
 from rest_framework.decorators import APIView,api_view
 from rest_framework.response import Response
-from .serializers import CourtMasterSerializer, LocationWithCourtsSerializer , SportMasterSerializer,CourtMasterDetailSerializer,BookingMasterDetailSerializer,BookedSlotViewSerializer,SlotMasterSerializer,BookingMasterSerializer
+from .serializers import BookingMasterWriteSerializer, CourtMasterSerializer, LocationWithCourtsSerializer , SportMasterSerializer,CourtMasterDetailSerializer,BookingMasterDetailSerializer,BookedSlotViewSerializer,SlotMasterSerializer,BookingMasterSerializer
 from .models import CourtMaster,BookingMaster,SlotMaster
 from rest_framework import status
 from api.utils import get_user_from_token
@@ -210,32 +212,51 @@ class CourtBookingSlot(APIView):
         user, error_response = get_user_from_token(request)
         if error_response:
             return error_response
-        court_id = request.query_params.get('court_id', None)
-        date = request.query_params.get('date', None)
-        slot = request.query_params.get('slot',None)
+      
+        data = request.data
         
-        already_booked = BookingMaster.objects.filter(slot__slotId=slot , book_Date = date , court__court_Id = court_id)
-        if already_booked.exists():
+        serializer = BookingMasterWriteSerializer(data=request.data)
+        if serializer.is_valid():
+            booking = serializer.save()
+            # Return nested representation using detail serializer
+            detail_serializer = BookingMasterDetailSerializer(booking)
             return Response({
-                "status": "failed",
-                "statusCode": status.HTTP_404_NOT_FOUND,
-                "data": "Slot has Already Booked"
+                "status": "success",
+                "statusCode": status.HTTP_201_CREATED,
+                "data": detail_serializer.data
             })
-        else :
-            book_data = BookingMasterSerializer(data= request.data)
-            if book_data.is_valid():
-                book_data.save()
-                return Response({
-                     "status": "success",
-                     "statusCode": status.HTTP_200_OK,
-                     "data":book_data,
-                    })
+        else:
             return Response({
                 "status": "failed",
-                "statusCode": status.HTTP_404_NOT_FOUND,
-                "data": "Slot data missing"
-            })   
+                "statusCode": status.HTTP_400_BAD_REQUEST,
+                "data": serializer.errors
+            })
                
-            
+               
+class SeprateUserBookedSlot(APIView):
+    def get(self, request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+        
+        # Use user from token
+        user_id = user.reg_id  
+        print(f"Fetching bookings for user_id: {user_id}")
+
+        booked_data = BookingMaster.objects.filter(user=user_id)
+        if booked_data.exists():
+            serialized_data = BookingMasterDetailSerializer(booked_data, many=True)
+            return Response({
+                "status": "success",
+                "statusCode": status.HTTP_200_OK,
+                "data": serialized_data.data
+            })
+        else:
+            return Response({
+                "status": "success",
+                "statusCode": status.HTTP_200_OK,
+                "data": []
+            })
+
                 
         

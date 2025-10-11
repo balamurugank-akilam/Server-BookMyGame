@@ -11,7 +11,8 @@ urlpatterns = [
   path('court-selection/',views.CourtSelectionView.as_view(),name='court_selection'),
   path('slot-view/',views.Slotview.as_view() , name='slot-view'), # get slots
   path('booked-slot/',views.BookedSlotCheckView.as_view() , name='booked-slot'),
-  path('slot-booking/',views.CourtBookingSlot.as_view(),name='slot-booking')
+  path('slot-booking/',views.CourtBookingSlot.as_view(),name='slot-booking'),
+  path('user-bookedslotView/',views.SeprateUserBookedSlot.as_view(), name='user-bookedSlotView'),
   
   
     
