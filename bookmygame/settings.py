@@ -58,8 +58,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     # 'yourapp.middleware.JWTAuthenticationMiddleware',
 ]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = 'bookmygame.urls'
 ALLOWED_HOSTS = ['*']
@@ -158,7 +160,6 @@ DATABASES = {
         'NAME': env('DATABASE_NAME'),
         'USER': env('DATABASE_USER'),
         'PASSWORD': env('DATABASE_PASSWORD'),
-        'HOST': '103.185.75.196',
         'HOST': env('DATABASE_HOST'),# or server\instance_name
         'PORT': env('DATABASE_PORT'),
 
@@ -204,13 +205,18 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # your static files folder
+]
 
-STATIC_URL = 'static/'
+# This is where collectstatic will put all files
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # For static files (CSS, JS, images used by Django)
-STATIC_URL = '/static/'
+
 
 MEDIA_URL = '/media/'
 # MEDIA_ROOT = BASE_DIR / 'media'

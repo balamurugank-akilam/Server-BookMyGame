@@ -148,13 +148,13 @@ class BookingMaster(models.Model):
     # Foreign Keys
     slot = models.ForeignKey('SlotMaster', on_delete=models.CASCADE, db_column='slot_Id')
     court = models.ForeignKey('CourtMaster', on_delete=models.CASCADE, db_column='court_Id')
-    user = models.ForeignKey(UserMaster, on_delete=models.CASCADE, null=True, blank=True, db_column='mobile')  # assuming mobile maps to User
+    user = models.ForeignKey(UserMaster, on_delete=models.CASCADE, null=True, blank=True, db_column='user_id')  # assuming mobile maps to User
 
     # Slot info (optional redundancy)
     slot_Name = models.CharField(max_length=255, db_column='slot_Name', blank=True, null=True)
 
     # Payment & amount
-    reg_Id = models.IntegerField(db_column='reg_Id', blank=True, null=True)
+    mobile = models.IntegerField( blank=True, null=True, db_column='mobile')
     discount = models.FloatField(default=0, db_column='discount')
     discount_Amt = models.FloatField(default=0, db_column='discount_Amt')
     actual_Amt = models.FloatField(default=0, db_column='actual_Amt')
