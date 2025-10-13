@@ -158,7 +158,7 @@ DATABASES = {
         'NAME': env('DATABASE_NAME'),
         'USER': env('DATABASE_USER'),
         'PASSWORD': env('DATABASE_PASSWORD'),
-        'HOST': '103.185.75.196',
+        # 'HOST': '103.185.75.196',
         'HOST': env('DATABASE_HOST'),# or server\instance_name
         'PORT': env('DATABASE_PORT'),
 
