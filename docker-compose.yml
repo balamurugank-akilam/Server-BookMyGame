@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   web:
     build: .
@@ -8,10 +10,8 @@ services:
     env_file:
       - .env
     volumes:
-      - book_data:/app                # Persist uploaded files
+      - book_data:/app/media         # Persist uploaded media files only
     restart: always
 
 volumes:
- book_data:
-
-
+  book_data:
