@@ -1,16 +1,6 @@
 version: "3.9"
 
 services:
-  db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: bookmygame_db
-    environment:
-      SA_PASSWORD: "prime_123$$"
-      ACCEPT_EULA: "Y"
-    ports:
-      - "1440:1433"
-    restart: always
-
   web:
     build: .
     container_name: bookmygame_web
@@ -19,11 +9,8 @@ services:
       - "8000:8000"
     env_file:
       - .env
-    depends_on:
-      - db
     volumes:
       - book_data:/app/media
     restart: always
-
-volumes:
-  book_data:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # 👈 makes the host accessible from inside container
