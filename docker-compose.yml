@@ -8,13 +8,32 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ./.env
+      - .env
+    environment:
+      # Force Django to read database info from .env
+      DJANGO_SETTINGS_MODULE: bookmygame.settings
+    networks:
+      - bookmygame_network
+    depends_on:
+      - mssql
+    restart: always
+  # Optional: internal MSSQL container (if not using external Akilam server)
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql_db
+    environment:
+      SA_PASSWORD: prime_123$
+      ACCEPT_EULA: Y
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
     networks:
       - bookmygame_network
     restart: always
 
 volumes:
-  app1_data:
+  mssql_data:
 
 networks:
   bookmygame_network:
