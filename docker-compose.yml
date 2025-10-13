@@ -12,5 +12,7 @@ services:
     volumes:
       - book_data:/app/media
     restart: always
-    extra_hosts:
-      - "host.docker.internal:host-gateway"   # 👈 makes the host accessible from inside container
+
+volumes:
+  book_data:
+
