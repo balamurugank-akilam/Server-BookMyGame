@@ -162,7 +162,7 @@ class Slotview(APIView):
         # date = request.query_params.get('date', None)
         
         if  court_id is not None:
-            slot_view = SlotMaster.objects.filter(court__court_Id = court_id , slot__IsActive = True)
+            slot_view = SlotMaster.objects.filter(court__court_Id = court_id , IsActive = True)
             serialized_data = SlotMasterSerializer(slot_view , many = True)
             
             return Response({
@@ -212,25 +212,35 @@ class CourtBookingSlot(APIView):
         user, error_response = get_user_from_token(request)
         if error_response:
             return error_response
-      
-        data = request.data
-        
-        serializer = BookingMasterWriteSerializer(data=request.data)
-        if serializer.is_valid():
-            booking = serializer.save()
-            # Return nested representation using detail serializer
-            detail_serializer = BookingMasterDetailSerializer(booking)
+
+        slots = request.data.get('slots', [])
+        court_id = request.data.get("court_id")
+        user_id = request.data.get('user_id')
+        date = request.data.get('date')
+
+        if court_id and user_id and date:
+            for slot_id in slots:
+                slot = SlotMaster.objects.get(slot_Id = slot_id)
+                court = CourtMaster.objects.get(court_Id = court_id)
+                user = UserMaster.objects.get(reg_id = user_id)
+                BookingMaster.objects.create(
+                    slot=slot,     # ✅ Use slot_id directly
+                    court=court,
+                    user=user,
+                   book_Date=date
+                )
+
             return Response({
                 "status": "success",
                 "statusCode": status.HTTP_201_CREATED,
-                "data": detail_serializer.data
+                "data": "Booking confirmed"
             })
-        else:
-            return Response({
-                "status": "failed",
-                "statusCode": status.HTTP_400_BAD_REQUEST,
-                "data": serializer.errors
-            })
+
+        return Response({
+            "status": "failed",
+            "statusCode": status.HTTP_400_BAD_REQUEST,
+            "data": "Parameters required"
+        })
                
                
 class SeprateUserBookedSlot(APIView):
