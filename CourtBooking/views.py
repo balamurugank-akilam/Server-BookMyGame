@@ -10,7 +10,6 @@ from api.utils import get_user_from_token
 from .models import SportMaster , UserMaster
 from api.serializers import UserSerializer
 
-# Create your views here.
 
 
 class CourtView(APIView):
@@ -224,7 +223,7 @@ class CourtBookingSlot(APIView):
                 court = CourtMaster.objects.get(court_Id = court_id)
                 user = UserMaster.objects.get(reg_id = user_id)
                 BookingMaster.objects.create(
-                    slot=slot,     # ✅ Use slot_id directly
+                    slot=slot,    
                     court=court,
                     user=user,
                    book_Date=date

@@ -290,7 +290,7 @@ class BookingMasterSerializer(serializers.ModelSerializer):
 class BookingMasterDetailSerializer(serializers.ModelSerializer):
     slot = SlotMasterDetailSerializer(read_only=True)
 
-    court = CourtMasterSerializer(read_only=True)
+    court = CourtMasterDetailSerializer(read_only=True)
     user = serializers.SerializerMethodField()
     modified_By = serializers.SerializerMethodField()
    

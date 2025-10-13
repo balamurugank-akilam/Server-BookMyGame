@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'api','CourtBooking',
     "rest_framework",
      'corsheaders',
+     'bookmygame_admin',
     #  "rest_framework.authtoken",
 
 ]
