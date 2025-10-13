@@ -1,16 +1,28 @@
 version: "3.9"
 
 services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: bookmygame_db
+    environment:
+      SA_PASSWORD: "prime_123$"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    restart: always
+
   web:
     build: .
     container_name: bookmygame_web
-    command: python manage.py runserver 8000
+    command: python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
     env_file:
       - .env
+    depends_on:
+      - db
     volumes:
-      - book_data:/app/media         # Persist uploaded media files only
+      - book_data:/app/media
     restart: always
 
 volumes:
