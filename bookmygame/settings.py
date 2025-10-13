@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import datetime
 import os
+import environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -149,15 +150,17 @@ WSGI_APPLICATION = 'bookmygame.wsgi.application'
 #     }
 # }
 
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 DATABASES = {
     'default': {
         'ENGINE': 'mssql',
-        'NAME': 'BookingMyGame',
-        'USER': 'sa',
-        'PASSWORD': 'prime_123$',
+        'NAME': env('DATABASE_NAME'),
+        'USER': env('DATABASE_USER'),
+        'PASSWORD': env('DATABASE_PASSWORD'),
         #'HOST': '103.185.75.196',
-        'HOST': 'akilam-server',# or server\instance_name
-        'PORT': '1433',
+        'HOST': env('DATABASE_HOST'),# or server\instance_name
+        'PORT': env('DATABASE_PORT'),
 
         'OPTIONS': {
             'driver': 'ODBC Driver 18 for SQL Server',  # or "ODBC Driver 18 for SQL Server"

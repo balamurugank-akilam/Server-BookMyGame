@@ -162,7 +162,7 @@ class Slotview(APIView):
         # date = request.query_params.get('date', None)
         
         if  court_id is not None:
-            slot_view = SlotMaster.objects.filter(court__court_Id = court_id )
+            slot_view = SlotMaster.objects.filter(court__court_Id = court_id , slot__IsActive = True)
             serialized_data = SlotMasterSerializer(slot_view , many = True)
             
             return Response({
