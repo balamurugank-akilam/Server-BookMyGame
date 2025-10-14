@@ -1,5 +1,5 @@
 # ---------------------------------------
-# Dockerfile for Django + MSSQL
+# Dockerfile for Django + MSSQL (Waitress)
 # ---------------------------------------
 
 # Use slim Python image
@@ -28,5 +28,6 @@ COPY . .
 # Expose Django port
 EXPOSE 8000
 
-# Default command
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# ✅ Start Django app using Waitress with more threads (improves concurrency)
+# Replace `bookmygame.wsgi:application` with your actual WSGI module path if different.
+CMD ["waitress-serve", "--listen=0.0.0.0:8000", "--threads=8", "bookmygame.wsgi:application"]
