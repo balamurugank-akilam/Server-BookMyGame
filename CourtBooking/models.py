@@ -59,13 +59,13 @@ class LocationMaster(models.Model):
 
     # Foreign Keys
     sport = models.ForeignKey(SportMaster, on_delete=models.SET_NULL, null=True, blank=True, db_column='sport_Id')
-    reg_Id = models.IntegerField(db_column='reg_Id', blank=True, null=True)
+    reg_Id = models.ForeignKey( UserMaster,db_column='reg_Id', blank=True, null=True, on_delete=models.SET_NULL)
     merchantid = models.CharField(max_length=255, db_column='merchantid', blank=True, null=True)
     upi = models.CharField(max_length=255, db_column='upi', blank=True, null=True)
     convenience_Fees = models.FloatField(default=0, db_column='convenience_Fees')
 
     # Self-referential for group location
-    grpLocation = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, db_column='grpLocation_Id')
+    grpLocation = models.IntegerField(null=True, blank=True, db_column='grpLocation_Id')
 
     class Meta:
         db_table = 'location_Master'
@@ -142,6 +142,7 @@ class SlotMaster(models.Model):
 
 
 class BookingMaster(models.Model):
+  
     book_Id = models.AutoField(primary_key=True, db_column='book_Id')
     book_Date = models.DateField(db_column='book_Date')
 
@@ -162,14 +163,16 @@ class BookingMaster(models.Model):
     payment_Id = models.CharField(max_length=255, blank=True, null=True, db_column='payment_Id')
 
     flag = models.BooleanField(default=True, db_column='flag')
+ 
 
     # Audit fields
     created_Date = models.DateTimeField(auto_now=True, db_column='created_Date')
     modified_By = models.ForeignKey(UserMaster, on_delete=models.SET_NULL, null=True, blank=True, related_name='booking_modified_by', db_column='modified_By')
     modified_Date = models.DateTimeField(auto_now=True, db_column='modified_Date')
+    hold_expires_at = models.DateTimeField(null=True, blank=True, db_column='hold_expires_at')
 
     class Meta:
         db_table = 'booking_Master'
 
     def __str__(self):
-        return f'Booking {self.book_Id} - {self.slot_Name}'
+        return f'Booking {self.book_Id} - {self.user.name if self.user else "No User"}'

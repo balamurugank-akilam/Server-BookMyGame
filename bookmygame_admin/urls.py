@@ -21,4 +21,5 @@ from . import views
 
 urlpatterns = [
     path('admin', views.AdminLogin.as_view(), name="admin-login"),
+    path('admin-court-location',views.AdminLocationView.as_view(),name='admin-location')
 ] 

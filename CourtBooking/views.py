@@ -1,14 +1,17 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from django.shortcuts import render
 from rest_framework.decorators import APIView,api_view
 from rest_framework.response import Response
+
+from app_task import release_expired_unpaid_holds
 from .serializers import BookingMasterWriteSerializer, CourtMasterSerializer, LocationWithCourtsSerializer , SportMasterSerializer,CourtMasterDetailSerializer,BookingMasterDetailSerializer,BookedSlotViewSerializer,SlotMasterSerializer,BookingMasterSerializer
 from .models import CourtMaster,BookingMaster,SlotMaster
 from rest_framework import status
 from api.utils import get_user_from_token
 from .models import SportMaster , UserMaster
 from api.serializers import UserSerializer
+from django.db import transaction   
 
 
 
@@ -24,12 +27,12 @@ class CourtView(APIView):
             })
         courts = CourtMaster.objects.all()   
         sport_name = request.query_params.get('sport',None)
-        print(sport_name)
+   
         location = request.query_params.get("location",None)
         
         if location is not None and sport_name is not None :
             court = courts.filter(location__city =location , location__sport__name = sport_name)
-            print(court)
+        
             serialized_data = CourtMasterDetailSerializer(court , many=True)
             return Response({
             "data":serialized_data.data,
@@ -39,7 +42,7 @@ class CourtView(APIView):
         
         if sport_name :
             court = courts.filter(location__sport__name = sport_name)
-            print(court)
+       
             serialized_data = CourtMasterDetailSerializer(court , many=True)
             return Response({
             "data":serialized_data.data,
@@ -49,7 +52,7 @@ class CourtView(APIView):
             
         if location :
             court = courts.filter(location__city = location)
-            print(court);
+      
             serialized_data = CourtMasterDetailSerializer(court , many=True)
             return Response({
             "data":serialized_data.data,
@@ -118,7 +121,7 @@ class CourtSelectionView(APIView):
 
         courts = CourtMaster.objects.filter(flag=True)
         if user_id is not None and location_city is not None:
-            courts = courts.filter(location__city__icontains=location_city , user=user_id)
+            courts = courts.filter(location__city__icontains=location_city , user=user_id ,)
 
             if not courts.exists():
                 return Response({
@@ -138,7 +141,7 @@ class CourtSelectionView(APIView):
                 
 
                     serializer = LocationWithCourtsSerializer(first_courts, many=True)
-                    print(first_courts);
+                   
                     
                 return Response({
                      "status": "success",
@@ -160,6 +163,9 @@ class Slotview(APIView):
         court_id = request.query_params.get('court_id', None)
         # date = request.query_params.get('date', None)
         
+        
+        #unpid  has reverted
+        release_expired_unpaid_holds()
         if  court_id is not None:
             slot_view = SlotMaster.objects.filter(court__court_Id = court_id , IsActive = True)
             serialized_data = SlotMasterSerializer(slot_view , many = True)
@@ -188,7 +194,7 @@ class BookedSlotCheckView(APIView):
         court_id = request.query_params.get('court_id', None)
         date = request.query_params.get('date', None)
         if  court_id is not None:
-            booking = BookingMaster.objects.filter(court__court_Id = court_id , book_Date = date)
+            booking = BookingMaster.objects.filter(court__court_Id = court_id , book_Date = date , flag=True)
             serialized_data = BookedSlotViewSerializer(booking , many = True)
             return Response({
                      "status": "success",
@@ -204,9 +210,11 @@ class BookedSlotCheckView(APIView):
                 "data": "Court No Required"
             })
                 
-                
+HOLD_DURATION_MINUTES = 10               
     
 class CourtBookingSlot(APIView):
+    
+    @transaction.atomic
     def post(self, request):
         user, error_response = get_user_from_token(request)
         if error_response:
@@ -216,23 +224,39 @@ class CourtBookingSlot(APIView):
         court_id = request.data.get("court_id")
         user_id = request.data.get('user_id')
         date = request.data.get('date')
+        
+        is_booked = BookingMaster.objects.filter(
+            court__court_Id=court_id,
+            slot_id__in=slots,      # use __in for list of slot IDs
+            book_Date=date  ,
+            flag = True ,
+            payment_Id__isnull=False      # assuming your model has a date field
+        ).exists()                  # returns True if any matching bookings exist
 
+        if is_booked:
+            return Response({"message": "Slot(s) already booked"}, status=400)
+        
+        expire_at = datetime.now(timezone.utc) + timedelta(minutes=HOLD_DURATION_MINUTES)
+        created_ids = []
         if court_id and user_id and date:
             for slot_id in slots:
                 slot = SlotMaster.objects.get(slot_Id = slot_id)
                 court = CourtMaster.objects.get(court_Id = court_id)
                 user = UserMaster.objects.get(reg_id = user_id)
-                BookingMaster.objects.create(
+                booking = BookingMaster.objects.create(
                     slot=slot,    
                     court=court,
                     user=user,
-                   book_Date=date
+                   book_Date=date,
+                   flag=True,
+                   hold_expires_at = expire_at
                 )
+                created_ids.append(str(booking.book_Id))
 
             return Response({
                 "status": "success",
                 "statusCode": status.HTTP_201_CREATED,
-                "data": "Booking confirmed"
+                "data":created_ids
             })
 
         return Response({
@@ -240,6 +264,45 @@ class CourtBookingSlot(APIView):
             "statusCode": status.HTTP_400_BAD_REQUEST,
             "data": "Parameters required"
         })
+    
+    
+@api_view(['POST'])
+@transaction.atomic
+def confirm_booking(request):
+    booking_ids = request.data.get('booking_ids', [])
+    payment_id = request.data.get('payment_id')
+
+    if not booking_ids or not payment_id:
+        return Response({"error":"missing parameters"}, status=status.HTTP_400_BAD_REQUEST)
+
+    bookings = BookingMaster.objects.select_for_update().filter(book_Id__in=booking_ids, )
+    if bookings.count() != len(booking_ids):
+        return Response({"error":"some bookings not in HOLD state"}, status=status.HTTP_400_BAD_REQUEST)
+
+    for b in bookings:
+     
+        b.payment_Id = payment_id
+        b.hold_expires_at = None
+        b.flag = True
+        b.save()
+
+    return Response({"status":"confirmed", "booking_ids": booking_ids})
+
+
+@api_view(['POST'])
+@transaction.atomic
+def cancel_booking(request):
+    booking_ids = request.data.get('booking_ids', [])
+    if not booking_ids:
+        return Response({"error":"missing booking_ids"}, status=status.HTTP_400_BAD_REQUEST)
+
+    bookings = BookingMaster.objects.select_for_update().filter(book_Id__in=booking_ids)
+    for b in bookings:
+        b.flag = False
+        b.hold_expires_at = None
+        b.save()
+    return Response({"status":"cancelled", "booking_ids": booking_ids})
+
                
                
 class SeprateUserBookedSlot(APIView):
@@ -249,9 +312,8 @@ class SeprateUserBookedSlot(APIView):
             return error_response
         
         # Use user from token
-        user_id = user.reg_id  
-        print(f"Fetching bookings for user_id: {user_id}")
-
+        user_id = request.query_params.get("user_id",None)
+      
         booked_data = BookingMaster.objects.filter(user=user_id)
         if booked_data.exists():
             serialized_data = BookingMasterDetailSerializer(booked_data, many=True)

@@ -16,10 +16,10 @@ def decode_jwt(token):
     try:
         return jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
     except jwt.ExpiredSignatureError:
-        print("⚠️ Token expired")
+      
         return None
     except jwt.InvalidTokenError as e:
-        print("⚠️ Invalid token:", e)
+       
         return None
 
 def create_user_tokens(user):
@@ -32,7 +32,7 @@ def create_user_tokens(user):
 
 def verify_user_token(token):
     payload = decode_jwt(token)
-    print("Decoded payload:", payload)
+    
     if not payload:
         return None
     if payload.get('type') != 'access' or 'reg_id' not in payload:

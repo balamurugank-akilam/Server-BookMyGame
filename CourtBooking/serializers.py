@@ -41,7 +41,7 @@ class LocationMasterSerializer(serializers.ModelSerializer):
 
 class LocationMasterDetailSerializer(serializers.ModelSerializer):
     sport = SportMasterSerializer(read_only=True)
-    grpLocation = LocationMasterSerializer(read_only=True)
+    
     
     class Meta:
         model = LocationMaster

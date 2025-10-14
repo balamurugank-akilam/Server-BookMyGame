@@ -13,6 +13,8 @@ urlpatterns = [
   path('booked-slot/',views.BookedSlotCheckView.as_view() , name='booked-slot'),
   path('slot-booking/',views.CourtBookingSlot.as_view(),name='slot-booking'),
   path('user-bookedslotView/',views.SeprateUserBookedSlot.as_view(), name='user-bookedSlotView'),
+  path('confirm-booking',views.confirm_booking , name='confirm-booking'),
+  path('cancel-booking/',views.cancel_booking , name='cancel-booking'),
   
   
     
