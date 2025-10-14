@@ -224,6 +224,7 @@ class CourtBookingSlot(APIView):
         court_id = request.data.get("court_id")
         user_id = request.data.get('user_id')
         date = request.data.get('date')
+        amout = request.data.get("amount")
         
         is_booked = BookingMaster.objects.filter(
             court__court_Id=court_id,
@@ -243,13 +244,22 @@ class CourtBookingSlot(APIView):
                 slot = SlotMaster.objects.get(slot_Id = slot_id)
                 court = CourtMaster.objects.get(court_Id = court_id)
                 user = UserMaster.objects.get(reg_id = user_id)
+                amount = 0
+                if slot.IsPeak :
+                    amount = court.peakhours
+                    print(amout)
+                else :
+                    amount = court.nonpeakhours
+                    print(amout)
                 booking = BookingMaster.objects.create(
                     slot=slot,    
                     court=court,
                     user=user,
                    book_Date=date,
                    flag=True,
-                   hold_expires_at = expire_at
+                   hold_expires_at = expire_at,
+                   final_Amount = float(amount)
+                   
                 )
                 created_ids.append(str(booking.book_Id))
 

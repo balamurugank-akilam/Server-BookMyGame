@@ -159,7 +159,7 @@ class BookingMaster(models.Model):
     discount = models.FloatField(default=0, db_column='discount')
     discount_Amt = models.FloatField(default=0, db_column='discount_Amt')
     actual_Amt = models.FloatField(default=0, db_column='actual_Amt')
-    final_Amt = models.FloatField(default=0, db_column='final_Amt')
+    final_Amount = models.FloatField(default=0, db_column='final_Amt')
     payment_Id = models.CharField(max_length=255, blank=True, null=True, db_column='payment_Id')
 
     flag = models.BooleanField(default=True, db_column='flag')
