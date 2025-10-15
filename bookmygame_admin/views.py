@@ -6,6 +6,7 @@ from api.models import UserMaster , UserTypeMaster
 from CourtBooking.models import LocationMaster
 from CourtBooking.serializers import LocationMasterDetailSerializer
 from rest_framework import status
+from django.apps import apps
 
 # Create your views here.
 
@@ -66,6 +67,61 @@ class AdminLocationView(APIView):
         "status": "failed",
         "statusCode": status.HTTP_401_UNAUTHORIZED
     })
+            
+    def get(self , request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+        
+        is_user_admin = UserMaster.objects.filter(reg_id = user.reg_id , user_type__id=2) 
+
+        if not is_user_admin:  # True if no user with type=2 and matching credentials
+            return Response({
+        "data": "User not valid or not admin",
+        "status": "failed",
+        "statusCode": status.HTTP_401_UNAUTHORIZED
+    })
+        
+        try:
+           model = apps.get_model("CourtBooking", "LocationMaster")  # 👈 replace your_app_name
+        except LookupError:
+            return Response({
+                "data": f"Model '{LocationMaster}' not found",
+                "status": "failed",
+                "statusCode": status.HTTP_404_NOT_FOUND
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        exclude_fields = ['flag', 'reg_Id', 'location_Id']
+        fields = []
+
+        for field in LocationMaster._meta.get_fields():
+            # Skip auto-created reverse relationships (many-to-one) and one-to-many fields
+            if field.many_to_one and field.auto_created:
+                continue
+            if field.one_to_many:
+                continue
+
+            # Skip fields listed in exclude_fields
+            if field.name in exclude_fields:
+                continue
+
+            # Add the field name to the list
+            fields.append(field.name)
+
+        print(fields)
+
+        location_data = LocationMaster.objects.filter(reg_Id = user.reg_id)
+        serialized = LocationMasterDetailSerializer(location_data , many =True)
+
+
+       
+        return Response({
+        
+            "fields": fields,
+            "data":serialized.data,
+            "status": "success",
+            "statusCode": status.HTTP_200_OK
+        })
     
         
 
