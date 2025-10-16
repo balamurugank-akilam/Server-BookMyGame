@@ -38,6 +38,7 @@ class AdminLogin(APIView):
 
 
 class AdminLocationView(APIView):
+    
     def post(self, request):
         user, error_response = get_user_from_token(request)
         if error_response:
@@ -53,7 +54,7 @@ class AdminLocationView(APIView):
     })
         serialzer_data = LocationMasterDetailSerializer(data = request.data)
         if serialzer_data.is_valid():
-            serialzer_data.save()
+            data = serialzer_data.save()
             
             return Response({
         "data": serialzer_data.data,
@@ -122,6 +123,28 @@ class AdminLocationView(APIView):
             "status": "success",
             "statusCode": status.HTTP_200_OK
         })
-    
+        
+        
+
+    def delete(self , request):
+        
+        location_id = request.data.get("location_id")
+        
+        if location_id is not None :
+            location = LocationMaster.objects.filter(location_Id = location_id)
+            location.delete()
+            return Response({
+            "data":"Location Deleted ",
+            "status": "success",
+            "statusCode": status.HTTP_200_OK
+        })
+            
+        return Response({
+                "data": f"parameters Required",
+                "status": "failed",
+                "statusCode": status.HTTP_404_NOT_FOUND
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        
         
 

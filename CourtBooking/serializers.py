@@ -33,6 +33,7 @@ class LocationMasterSerializer(serializers.ModelSerializer):
     sport_name = serializers.CharField(source='sport.name', read_only=True)
     grpLocation_name = serializers.CharField(source='grpLocation.name', read_only=True)
     
+    
     class Meta:
         model = LocationMaster
         fields = '__all__'
@@ -41,6 +42,11 @@ class LocationMasterSerializer(serializers.ModelSerializer):
 
 class LocationMasterDetailSerializer(serializers.ModelSerializer):
     sport = SportMasterSerializer(read_only=True)
+    sport_Id = serializers.PrimaryKeyRelatedField(
+    queryset=SportMaster.objects.all(),
+    source='sport',  # maps to model's sport field
+    write_only=True
+)
     
     
     class Meta:
