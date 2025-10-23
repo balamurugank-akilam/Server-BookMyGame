@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework",
      'corsheaders',
      'bookmygame_admin',
+
     #  "rest_framework.authtoken",
 
 ]
@@ -122,6 +123,7 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
   
 }
+
 
 
 

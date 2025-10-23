@@ -21,11 +21,13 @@ from django.conf.urls.static import static
 from django.conf import settings
 from bookmygame_admin import urls
 
+
+
 urlpatterns = [
     
     path('admin/', admin.site.urls),
     path('api/',include('api.urls')),
     path('api/Court/',include('CourtBooking.urls')),
-    path('api/bookmy-game/',include('bookmygame_admin.urls'))
+    path('api/bookmy-game/',include('bookmygame_admin.urls')),
     
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

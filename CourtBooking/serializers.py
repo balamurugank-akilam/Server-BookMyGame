@@ -88,7 +88,7 @@ class CourtTypeSerializer(serializers.ModelSerializer):
         fields = ['court_type_id', 'court_type']
 
 class CourtMasterSerializer(serializers.ModelSerializer):
-    location_name = serializers.CharField(source='location.name', read_only=True)
+    location = LocationMasterSerializer()
     user_details = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
@@ -105,18 +105,53 @@ class CourtMasterSerializer(serializers.ModelSerializer):
             }
         return None
 
-
-        
-
-class CourtMasterDetailSerializer(serializers.ModelSerializer):
-    location = LocationMasterSerializer(read_only=True)
-    user = serializers.SerializerMethodField()
-    court_type = CourtTypeSerializer()
+class CourtMasterForBookedSlotSerializer(serializers.ModelSerializer):
+    location = LocationMasterSerializer()
+    user_details = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = CourtMaster
-        fields = '__all__'
+        fields = ['court_Id' , "court_Name","court_Count","coach_Count","url","flag","user_details","location"]
+        extra_fields = ['location_name', 'user_details']
     
+    def get_user_details(self, obj):
+        if obj.user:
+            return {
+                'user_id': obj.user.reg_id,
+                'mobile': obj.user.mobile,
+                'name': obj.user.name
+            }
+        return None
+        
+
+class CourtMasterDetailSerializer(serializers.ModelSerializer):
+    # show nested details when reading
+    location = LocationMasterSerializer(read_only=True)
+    # accept only the ID when writing
+    location_Id = serializers.PrimaryKeyRelatedField(
+        queryset=LocationMaster.objects.all(), 
+        source='location',  # maps to the FK field in the model
+        write_only=True
+    )
+   
+    user = serializers.SerializerMethodField()
+    court_type = CourtTypeSerializer(read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset = UserMaster.objects.all(),
+        source="user",
+        write_only = True
+    )
+    court_type_Id = serializers.PrimaryKeyRelatedField(
+        queryset = CourtType.objects.all(),
+        source = "court_type",
+        write_only = True
+    )
+    
+
+    class Meta:
+        model = CourtMaster
+        fields = '__all__'
+
     def get_user(self, obj):
         if obj.user:
             return {
@@ -125,6 +160,7 @@ class CourtMasterDetailSerializer(serializers.ModelSerializer):
                 'name': obj.user.name
             }
         return None
+
     
     
     
@@ -161,6 +197,7 @@ class SlotMasterSerializer(serializers.ModelSerializer):
     # created_by_name = serializers.CharField(source='created_By.name', read_only=True)
     # updated_by_name = serializers.CharField(source='updated_By.name', read_only=True)
     session_name = serializers.CharField(source='session_Id.session_name', read_only=True)
+    court_id = serializers.IntegerField(source = 'court.court_Id' , read_only = True)
 
 
 
@@ -172,7 +209,7 @@ class SlotMasterSerializer(serializers.ModelSerializer):
             'slot_Id', 'court', 'slot_Name', 'IsPeak', 'IsActive', 
             'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
             'created_By', 'created_Date', 'updated_By', 'updated_Date',
-            'court_name', 'session_name'
+            'court_name', 'session_name' ,"court_id"
         ]
         extra_fields =['session_name']
         
@@ -323,6 +360,46 @@ class BookingMasterDetailSerializer(serializers.ModelSerializer):
             }
         return None
     
+    
+class BookingMasterWithAllDataSerializer(serializers.ModelSerializer):
+    slot = serializers.SerializerMethodField()
+
+    court = CourtMasterForBookedSlotSerializer()
+    user = serializers.SerializerMethodField()
+    modified_By = serializers.SerializerMethodField()
+   
+   
+    
+    class Meta:
+        model = BookingMaster
+        fields = '__all__'
+    
+    def get_user(self, obj):
+        if obj.user:
+            return {
+                'user_id': obj.user.reg_id,
+                'mobile': obj.user.mobile,
+                'name': obj.user.name
+            }
+        return None
+    
+    def get_modified_By(self, obj):
+        if obj.modified_By:
+            return {
+                'user_id': obj.modified_By.reg_id,
+                'mobile': obj.modified_By.mobile,
+                'name': obj.modified_By.name
+            }
+        return None
+    
+    def get_slot(self,obj):
+        if obj.slot:
+            return {
+                "slot_Id":int(obj.slot.slot_Id),
+                "slot_Name":str(obj.slot.slot_Name)
+            }
+            
+
     
 class BookingMasterWriteSerializer(serializers.ModelSerializer):
     slot = serializers.DictField(write_only=True)

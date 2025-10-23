@@ -5,14 +5,34 @@ from rest_framework.decorators import APIView,api_view
 from rest_framework.response import Response
 
 from app_task import release_expired_unpaid_holds
-from .serializers import BookingMasterWriteSerializer, CourtMasterSerializer, LocationWithCourtsSerializer , SportMasterSerializer,CourtMasterDetailSerializer,BookingMasterDetailSerializer,BookedSlotViewSerializer,SlotMasterSerializer,BookingMasterSerializer
-from .models import CourtMaster,BookingMaster,SlotMaster
+from .serializers import BookingMasterWithAllDataSerializer, BookingMasterWriteSerializer, CourtMasterSerializer, LocationWithCourtsSerializer , SportMasterSerializer,CourtMasterDetailSerializer,BookingMasterDetailSerializer,BookedSlotViewSerializer,SlotMasterSerializer,BookingMasterSerializer , CourtTypeSerializer
+from .models import CourtMaster,BookingMaster,SlotMaster, CourtType
 from rest_framework import status
 from api.utils import get_user_from_token
 from .models import SportMaster , UserMaster
-from api.serializers import UserSerializer
+from api.serializers import UserSerializer 
 from django.db import transaction   
 
+
+
+class CourtTypeView(APIView):
+    def get(self , request  ):
+        user , error_response = get_user_from_token(request)
+        if error_response :
+            return Response({
+                "data":"Token expaired or Not Available",
+                "status":"failed",
+                "statusCode":status.HTTP_401_UNAUTHORIZED
+            })
+            
+        types = CourtType.objects.all()
+        serialized_data = CourtTypeSerializer(types , many = True)
+        return Response({
+            "data":serialized_data.data,
+            "status":"Success",
+            "statusCode":status.HTTP_200_OK
+            })
+        
 
 
 class CourtView(APIView):
@@ -324,9 +344,10 @@ class SeprateUserBookedSlot(APIView):
         # Use user from token
         user_id = request.query_params.get("user_id",None)
       
-        booked_data = BookingMaster.objects.filter(user=user_id)
+        booked_data = BookingMaster.objects.filter(user__reg_id=user_id)
+        print(booked_data)
         if booked_data.exists():
-            serialized_data = BookingMasterDetailSerializer(booked_data, many=True)
+            serialized_data = BookingMasterWithAllDataSerializer(booked_data, many=True)
             return Response({
                 "status": "success",
                 "statusCode": status.HTTP_200_OK,

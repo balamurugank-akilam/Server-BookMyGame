@@ -120,13 +120,13 @@ class SlotMaster(models.Model):
     session_Id = models.ForeignKey('SessionMaster', on_delete=models.CASCADE, db_column='session_Id',blank=True, default='Morning')
 
     # Days of the week
-    Mon = models.BooleanField(default=False, db_column='Mon')
-    Tue = models.BooleanField(default=False, db_column='Tue')
-    Wed = models.BooleanField(default=False, db_column='Wed')
-    Thu = models.BooleanField(default=False, db_column='Thu')
-    Fri = models.BooleanField(default=False, db_column='Fri')
-    Sat = models.BooleanField(default=False, db_column='Sat')
-    Sun = models.BooleanField(default=False, db_column='Sun')
+    Mon = models.BooleanField(default=True, db_column='Mon')
+    Tue = models.BooleanField(default=True, db_column='Tue')
+    Wed = models.BooleanField(default=True, db_column='Wed')
+    Thu = models.BooleanField(default=True, db_column='Thu')
+    Fri = models.BooleanField(default=True, db_column='Fri')
+    Sat = models.BooleanField(default=True, db_column='Sat')
+    Sun = models.BooleanField(default=True, db_column='Sun')
 
     # Audit fields
     created_By = models.ForeignKey(UserMaster, on_delete=models.SET_NULL, null=True, blank=True, related_name='slot_created_by', db_column='created_By')
