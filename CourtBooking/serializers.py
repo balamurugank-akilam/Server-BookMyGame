@@ -206,7 +206,7 @@ class SlotMasterSerializer(serializers.ModelSerializer):
         model = SlotMaster
         # Explicitly list fields including extra fields
         fields = [
-            'slot_Id', 'court', 'slot_Name', 'IsPeak', 'IsActive', 
+            'slot_Id', 'slot_Name', 'IsPeak', 'IsActive', 
             'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
             'created_By', 'created_Date', 'updated_By', 'updated_Date',
             'court_name', 'session_name' ,"court_id"

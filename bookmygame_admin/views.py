@@ -3,9 +3,9 @@ from api.utils import get_user_from_token
 from rest_framework.decorators import APIView
 from rest_framework.response import Response
 from api.models import UserMaster , UserTypeMaster 
-from CourtBooking.models import CourtMaster
+from CourtBooking.models import CourtMaster,SlotMaster
 from CourtBooking.models import LocationMaster
-from CourtBooking.serializers import LocationMasterDetailSerializer , CourtMasterDetailSerializer
+from CourtBooking.serializers import LocationMasterDetailSerializer , CourtMasterDetailSerializer , SlotMasterSerializer
 from rest_framework import status
 from django.apps import apps
 from app_task import CreateTimeslots
@@ -242,6 +242,45 @@ class AdminCourtView(APIView):
                 "statusCode": status.HTTP_404_NOT_FOUND
             })
             
+    def put(self , request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+
+        is_user_admin = UserMaster.objects.filter(reg_id=user.reg_id, user_type__id=2).exists()
+        if not is_user_admin:
+            return Response({
+                "data": "User not valid or not admin",
+                "status": "failed",
+                "statusCode": status.HTTP_401_UNAUTHORIZED
+            }) 
+            
+        court_id = request.data.get("court_Id")
+        if not court_id:
+            return Response({
+                "data":"Court Id require to update",
+                "status":"failed",
+                "statusCode":status.HTTP_200_OK,
+            })
+            
+        
+        court_data = CourtMaster.objects.get(court_Id = court_id)
+        serilaized_data = CourtMasterDetailSerializer(court_data , data = request.data , partial=True)
+        if serilaized_data.is_valid():
+            serilaized_data.save()
+            return Response({
+                "data":serilaized_data.data,
+                "status":"success",
+                "statusCode":status.HTTP_200_OK
+            })
+        
+            
+            
+        return Response({
+            "data":"invalied data",
+            "status":"failed",
+            "statusCode":status.HTTP_400_BAD_REQUEST
+        })
     
     def delete(self , request):
         user, error_response = get_user_from_token(request)
@@ -266,7 +305,26 @@ class AdminCourtView(APIView):
 
 
 
-# class SlotView(APIView):
+class AdminSlotView(APIView):
+    def get(self, request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+
+        is_user_admin = UserMaster.objects.filter(reg_id=user.reg_id, user_type__id=2).exists()
+        if not is_user_admin:
+            return Response({
+                "data": "User not valid or not admin",
+                "status": "failed",
+                "statusCode": status.HTTP_401_UNAUTHORIZED
+            })
+            
+        slot = SlotMaster.objects.all()
+        serialized_data = SlotMasterSerializer(slot , many=True)
+        return Response({
+                "data": serialized_data.data,
+                "status": "success",
+                "statusCode": status.HTTP_200_OK
+            }) 
     
-        
 

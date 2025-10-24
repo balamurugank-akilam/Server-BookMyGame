@@ -79,7 +79,7 @@ class CourtMaster(models.Model):
     court_Name = models.CharField(max_length=255, db_column='court_Name')
     court_Count = models.IntegerField(default=0, db_column='court_Count')
     coach_Count = models.IntegerField(default=0, db_column='coach_Count')
-    url = models.URLField(max_length=500, blank=True, null=True, db_column='url')
+    url = models.URLField(max_length=500, blank=True, null=True, db_column='url' , default="")
     duration = models.IntegerField(help_text="Duration in minutes", db_column='duration')
     starttime = models.TimeField(db_column='starttime')
     endtime = models.TimeField(db_column='endtime')

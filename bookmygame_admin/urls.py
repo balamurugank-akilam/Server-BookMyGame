@@ -22,5 +22,6 @@ from . import views
 urlpatterns = [
     path('admin', views.AdminLogin.as_view(), name="admin-login"),
     path('admin-court-location',views.AdminLocationView.as_view(),name='admin-location'),
-    path("admin-court",views.AdminCourtView.as_view() , name="admin-court")
+    path("admin-court",views.AdminCourtView.as_view() , name="admin-court"),
+    path("admin-slot",views.AdminSlotView.as_view(), name="asmin-slot")
 ] 
