@@ -27,3 +27,34 @@ services:
 
 volumes:
   book_data:
+
+
+# version: "3.9"
+
+# services:
+#   db:
+#     container_name: bookmygame_db
+#     image: mcr.microsoft.com/mssql/server:2022-latest
+#     environment:
+#       SA_PASSWORD: "prime_123$"
+#       ACCEPT_EULA: "Y"
+#     ports:
+#       - "1440:1433"
+#     restart: always
+
+#   web:
+#     build: .
+#     container_name: bookmygame_app
+#     command: waitress-serve --port=8001 bookmygame.wsgi:application
+#     ports:
+#       - "8001:8001"
+#     env_file:
+#       - .env
+#     depends_on:
+#       - db
+#     volumes:
+#       - book_data:/app/media
+#     restart: always
+
+# volumes:
+#   book_data:

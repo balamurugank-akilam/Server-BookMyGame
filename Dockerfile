@@ -26,8 +26,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose Django port
-EXPOSE 8000
 
-# ✅ Start Django app using Waitress with more threads (improves concurrency)
-# Replace `bookmygame.wsgi:application` with your actual WSGI module path if different.
+#prod
+EXPOSE 8000
+#prod
 CMD ["waitress-serve", "--listen=0.0.0.0:8000", "--threads=8", "bookmygame.wsgi:application"]
+
+
+# EXPOSE 8001
+# CMD ["waitress-serve", "--listen=0.0.0.0:8001", "--threads=8", "bookmygame.wsgi:application"]
+
+
+
