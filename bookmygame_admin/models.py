@@ -1,5 +1,5 @@
 from django.db import models
-from CourtBooking.models import CourtMaster
+from CourtBooking.models import CourtMaster  , LocationMaster
 
 # Create your models here.
 class HolidayMaster(models.Model):
@@ -7,8 +7,8 @@ class HolidayMaster(models.Model):
     holiday_date = models.DateField(db_column='holiday_date')
     flag = models.BooleanField(db_column='flag', default=False)
     leave_Type = models.CharField(db_column='leave_Type', max_length=100, null=True, blank=True)
-    location_id = models.IntegerField(db_column='location_id', null=True, blank=True)
-
+    location_id = models.ForeignKey(LocationMaster , on_delete=models.CASCADE ,db_column='location_id', null=True, blank=True)
+    isTournament = models.BooleanField(db_column="isTournament",default=False)
     # Foreign key relation
     court = models.ForeignKey(
         CourtMaster,

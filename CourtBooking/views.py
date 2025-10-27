@@ -11,7 +11,8 @@ from rest_framework import status
 from api.utils import get_user_from_token
 from .models import SportMaster , UserMaster
 from api.serializers import UserSerializer 
-from django.db import transaction   
+from django.db import transaction  
+from bookmygame_admin.models import HolidayMaster 
 
 
 
@@ -213,7 +214,9 @@ class BookedSlotCheckView(APIView):
             return error_response
         court_id = request.query_params.get('court_id', None)
         date = request.query_params.get('date', None)
-        if  court_id is not None:
+       
+        if  court_id is not None and date is not None:
+            
             booking = BookingMaster.objects.filter(court__court_Id = court_id , book_Date = date , flag=True)
             serialized_data = BookedSlotViewSerializer(booking , many = True)
             return Response({
@@ -223,7 +226,7 @@ class BookedSlotCheckView(APIView):
                    
                     })
         
-        if court_id is None:
+        if court_id is None and date is None:
                 return Response({
                 "status": "failed",
                 "statusCode": status.HTTP_404_NOT_FOUND,

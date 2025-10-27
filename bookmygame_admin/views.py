@@ -3,12 +3,14 @@ from api.utils import get_user_from_token
 from rest_framework.decorators import APIView
 from rest_framework.response import Response
 from api.models import UserMaster , UserTypeMaster 
-from CourtBooking.models import CourtMaster,SlotMaster
+from CourtBooking.models import CourtMaster,SlotMaster,BookingMaster
 from CourtBooking.models import LocationMaster
-from CourtBooking.serializers import LocationMasterDetailSerializer , CourtMasterDetailSerializer , SlotMasterSerializer
+from CourtBooking.serializers import LocationMasterDetailSerializer , CourtMasterDetailSerializer , SlotMasterSerializer , BookingMasterDetailSerializer
 from rest_framework import status
 from django.apps import apps
 from app_task import CreateTimeslots
+from .models import HolidayMaster
+from .serializers import HolidayMasterSerializer
 
 # Create your views here.
 
@@ -126,6 +128,44 @@ class AdminLocationView(APIView):
             "statusCode": status.HTTP_200_OK
         })
         
+    
+    def put(self , request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+
+        is_user_admin = UserMaster.objects.filter(reg_id=user.reg_id, user_type__id=2).exists()
+        if not is_user_admin:
+            return Response({
+                "data": "User not valid or not admin",
+                "status": "failed",
+                "statusCode": status.HTTP_401_UNAUTHORIZED
+            }) 
+            
+        location_id = request.data.get("location_Id")
+        if not location_id :
+            return Response({
+                'status':"failed",
+                "statusCode":status.HTTP_400_BAD_REQUEST,
+                "data":"location id required"
+            })
+            
+        location = LocationMaster.objects.get(location_Id = location_id)
+        serialized_data = LocationMasterDetailSerializer(location , data= request.data , partial = True)
+        if serialized_data.is_valid():
+            serialized_data.save()
+            return Response({
+                "data":"data updated",
+                "status":"success",
+                "statusCode":status.HTTP_202_ACCEPTED
+            })
+            
+        else :
+            return Response({
+                "data" : "Invalid data",
+                "status":"failed",
+                "statusCode":status.HTTP_400_BAD_REQUEST
+            })
         
 
     def delete(self , request):
@@ -277,7 +317,7 @@ class AdminCourtView(APIView):
             
             
         return Response({
-            "data":"invalied data",
+            "data":f"invalied data { serilaized_data.error_messages}",
             "status":"failed",
             "statusCode":status.HTTP_400_BAD_REQUEST
         })
@@ -328,3 +368,63 @@ class AdminSlotView(APIView):
             }) 
     
 
+class AdminCourtHolidayView(APIView):
+    def get(self, request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+
+        is_user_admin = UserMaster.objects.filter(reg_id=user.reg_id, user_type__id=2).exists()
+        if not is_user_admin:
+            return Response({
+                "data": "User not valid or not admin",
+                "status": "failed",
+                "statusCode": status.HTTP_401_UNAUTHORIZED
+            })
+            
+        court_id = request.query_params.get("court_id" , None);
+        if court_id is None : 
+            return Response({
+                "data":"court_id has required One !",
+                "status":"failed",
+                "statusCode":status.HTTP_400_BAD_REQUEST
+            })
+        Court = CourtMaster.objects.get(court_Id = court_id)
+        holidays = HolidayMaster.objects.filter(court = Court)
+        if holidays is not None :
+            return Response({
+                "status":"sucess",
+                "statusCode":status.HTTP_200_OK
+                ,"data":HolidayMasterSerializer(holidays , many=True).data
+            })
+            
+        
+            
+        
+    
+class AdminCourtBookedSlotsCheck(APIView):
+    def get(self, request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+
+        is_user_admin = UserMaster.objects.filter(reg_id=user.reg_id, user_type__id=2).exists()
+        if not is_user_admin:
+            return Response({
+                "data": "User not valid or not admin",
+                "status": "failed",
+                "statusCode": status.HTTP_401_UNAUTHORIZED
+            })
+            
+            
+        court_id = request.query_params.get("court_id" , None);
+        date = request.query_params.get("date" , None);
+        if court_id is not None and date is not None:
+            BookedSlots = BookingMaster.objects.filter(court__court_Id = court_id ,book_Date=date )
+            return Response({
+                "status":"success",
+                "statusCode":status.HTTP_200_OK,
+                "data":BookingMasterDetailSerializer(BookedSlots , many=True).data
+            })
+                
+        
