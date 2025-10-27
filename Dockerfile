@@ -27,14 +27,14 @@ COPY . .
 
 # Expose Django port
 
-#prod
-EXPOSE 8000
-#prod
-CMD ["waitress-serve", "--listen=0.0.0.0:8000", "--threads=8", "bookmygame.wsgi:application"]
+# #prod
+# EXPOSE 8000
+# #prod
+# CMD ["waitress-serve", "--listen=0.0.0.0:8000", "--threads=8", "bookmygame.wsgi:application"]
 
 
-# EXPOSE 8001
-# CMD ["waitress-serve", "--listen=0.0.0.0:8001", "--threads=8", "bookmygame.wsgi:application"]
+EXPOSE 8001
+CMD ["waitress-serve", "--listen=0.0.0.0:8001", "--threads=8", "bookmygame.wsgi:application"]
 
 
 
