@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from api.models import UserMaster , UserTypeMaster 
 from CourtBooking.models import CourtMaster,SlotMaster,BookingMaster
 from CourtBooking.models import LocationMaster
-from CourtBooking.serializers import LocationMasterDetailSerializer , CourtMasterDetailSerializer , SlotMasterSerializer , BookingMasterDetailSerializer
+from CourtBooking.serializers import LocationMasterDetailSerializer , CourtMasterDetailSerializer , SlotMasterSerializer , BookingMasterDetailSerializer , BookingMasterWithAllDataSerializer
 from rest_framework import status
 from django.apps import apps
 from app_task import CreateTimeslots
@@ -367,6 +367,33 @@ class AdminSlotView(APIView):
                 "statusCode": status.HTTP_200_OK
             }) 
     
+    def put(self , request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+
+        is_user_admin = UserMaster.objects.filter(reg_id=user.reg_id, user_type__id=2).exists()
+        if not is_user_admin:
+            return Response({
+                "data": "User not valid or not admin",
+                "status": "failed",
+                "statusCode": status.HTTP_401_UNAUTHORIZED
+            }) 
+            
+        slots = request.data.get("slots" , [])
+        for slot in slots:
+            court_slot =slot["slot_Id"]
+            slot_instance = SlotMaster.objects.get(slot_Id = court_slot)
+            serialized = SlotMasterSerializer(slot_instance , data = slot , partial = True)
+            if serialized.is_valid():
+                serialized.save()
+            
+            
+        return Response({
+        "data": "Slots updated successfully",
+        "status": "success",
+        "statusCode": status.HTTP_200_OK
+    }, status=status.HTTP_200_OK)
 
 class AdminCourtHolidayView(APIView):
     def get(self, request):
@@ -424,7 +451,7 @@ class AdminCourtBookedSlotsCheck(APIView):
             return Response({
                 "status":"success",
                 "statusCode":status.HTTP_200_OK,
-                "data":BookingMasterDetailSerializer(BookedSlots , many=True).data
+                "data":BookingMasterWithAllDataSerializer(BookedSlots , many=True).data
             })
                 
         

@@ -192,6 +192,8 @@ class SessionMasterSerializer(serializers.ModelSerializer):
         fields = ['session_Id', 'session_name']   # Use correct model field names
 
 
+
+
 class SlotMasterSerializer(serializers.ModelSerializer):
     court_name = serializers.CharField(source='court.court_Name', read_only=True)
     # created_by_name = serializers.CharField(source='created_By.name', read_only=True)

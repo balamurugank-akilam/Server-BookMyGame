@@ -253,6 +253,7 @@ class CourtBookingSlot(APIView):
             court__court_Id=court_id,
             slot_id__in=slots,      # use __in for list of slot IDs
             book_Date=date  ,
+         
             flag = True ,
             payment_Id__isnull=False      # assuming your model has a date field
         ).exists()                  # returns True if any matching bookings exist
@@ -277,6 +278,7 @@ class CourtBookingSlot(APIView):
                 booking = BookingMaster.objects.create(
                     slot=slot,    
                     court=court,
+                    slot_Name = slot.slot_Name,
                     user=user,
                    book_Date=date,
                    flag=True,

@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from .models import HolidayMaster
-from CourtBooking.models import CourtMaster
+from CourtBooking.models import CourtMaster  ,SlotMaster
 from CourtBooking.serializers import CourtMasterSerializer , LocationMasterSerializer
+
 
 
 class HolidayMasterSerializer(serializers.ModelSerializer):
