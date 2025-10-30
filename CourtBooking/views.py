@@ -39,57 +39,45 @@ class CourtTypeView(APIView):
 
 class CourtView(APIView):
     
-    def get(self , request  ):
-        user , error_response = get_user_from_token(request)
-        if error_response :
+    def get(self, request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
             return Response({
-                "data":"Token expaired or Not Available",
-                "status":"failed",
-                "statusCode":status.HTTP_401_UNAUTHORIZED
+                "data": "Token expired or Not Available",
+                "status": "failed",
+                "statusCode": status.HTTP_401_UNAUTHORIZED
             })
-        courts = CourtMaster.objects.all()   
-        sport_name = request.query_params.get('sport',None)
-   
-        location = request.query_params.get("location",None)
-        
-        if location is not None and sport_name is not None :
-            court = courts.filter(location__city =location , location__sport__name = sport_name)
-        
-            serialized_data = CourtMasterDetailSerializer(court , many=True)
+
+        courts = CourtMaster.objects.all()
+        sport_id = request.query_params.get('sport_id')
+        location = request.query_params.get('location')
+
+        if sport_id and location:
+            court = courts.filter(
+                location__city__iexact=location.strip(),
+                location__sport_id=sport_id
+            )
+
+        elif sport_id:
+            court = courts.filter(location__sport_id=sport_id)
+
+        elif location:
+            court = courts.filter(location__city__iexact=location.strip())
+
+        else:
             return Response({
-            "data":serialized_data.data,
-            "status":"Success",
-            "statusCode":status.HTTP_200_OK
+                "data": "Location or Sport ID not provided",
+                "status": "failed",
+                "statusCode": status.HTTP_400_BAD_REQUEST
             })
-        
-        if sport_name :
-            court = courts.filter(location__sport__name = sport_name)
-       
-            serialized_data = CourtMasterDetailSerializer(court , many=True)
-            return Response({
-            "data":serialized_data.data,
-            "status":"Success",
-            "statusCode":status.HTTP_200_OK
-            })
-            
-        if location :
-            court = courts.filter(location__city = location)
-      
-            serialized_data = CourtMasterDetailSerializer(court , many=True)
-            return Response({
-            "data":serialized_data.data,
-            "status":"Success",
-            "statusCode":status.HTTP_200_OK
-            })
-              
-        # data = CourtMaster.objects.all()
-        # courtMaster_serialized = CourtMasterSerializer(data ,many = True)
+
+        serialized_data = CourtMasterDetailSerializer(court, many=True)
         return Response({
-            "data":"Location not selected",
-            "status":"failed",
-            "statusCode":status.HTTP_400_BAD_REQUEST
+            "data": serialized_data.data,
+            "status": "Success",
+            "statusCode": status.HTTP_200_OK
         })
-        
+
         
         
 class SportsMasterView(APIView):
