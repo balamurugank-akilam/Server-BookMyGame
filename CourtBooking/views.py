@@ -13,7 +13,8 @@ from .models import SportMaster , UserMaster
 from api.serializers import UserSerializer 
 from django.db import transaction  
 from bookmygame_admin.models import HolidayMaster 
-
+from bookmygame_admin.serializers import HolidayMasterSerializer
+import traceback
 
 
 class CourtTypeView(APIView):
@@ -188,7 +189,8 @@ class Slotview(APIView):
         #unpid  has reverted
         release_expired_unpaid_holds()
         if  court_id is not None:
-            slot_view = SlotMaster.objects.filter(court__court_Id = court_id , IsActive = True)
+            slot_view = SlotMaster.objects.filter(court__court_Id = court_id , IsActive = True ,IsMember = False)
+            print(slot_view)
             serialized_data = SlotMasterSerializer(slot_view , many = True)
             
             return Response({
@@ -205,8 +207,42 @@ class Slotview(APIView):
                 "data": "Court No Required"
             })
                 
-                
-                
+@api_view(["GET"])
+def SlotHolidayCheck(request):
+    court_id = request.query_params.get('court_id')
+    date = request.query_params.get('date')
+
+    if not court_id or not date:
+        return Response({
+            "status": "failed",
+            "statusCode": status.HTTP_400_BAD_REQUEST,
+            "data": "court_id and date are required"
+        })
+
+    try:
+        court_id = int(court_id)
+
+        holidays = HolidayMaster.objects.filter(
+            court__court_Id=court_id,
+           
+        )
+
+        serializer = HolidayMasterSerializer(holidays, many=True)
+
+        return Response({
+            "status": "success",
+            "statusCode": status.HTTP_200_OK,
+            "data": serializer.data
+        })
+
+    except Exception as e:
+        print(traceback.format_exc())
+        return Response({
+            "status": "error",
+            "statusCode": status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "data": str(e)
+        })
+    
 class BookedSlotCheckView(APIView):
     def get(self, request):
         user, error_response = get_user_from_token(request)

@@ -127,7 +127,7 @@ class SlotMaster(models.Model):
     Fri = models.BooleanField(default=True, db_column='Fri')
     Sat = models.BooleanField(default=True, db_column='Sat')
     Sun = models.BooleanField(default=True, db_column='Sun')
-
+    IsMember = models.BooleanField(default=False , db_column="IsMember")
     # Audit fields
     created_By = models.ForeignKey(UserMaster, on_delete=models.SET_NULL, null=True, blank=True, related_name='slot_created_by', db_column='created_By')
     created_Date = models.DateTimeField(auto_now=True, db_column='created_Date')

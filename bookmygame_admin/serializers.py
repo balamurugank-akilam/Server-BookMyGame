@@ -8,7 +8,7 @@ from CourtBooking.serializers import CourtMasterSerializer , LocationMasterSeria
 class HolidayMasterSerializer(serializers.ModelSerializer):
     court_name = serializers.CharField(source='court.courtName', read_only=True)
     court_id = serializers.IntegerField(source = "court.court_Id" , read_only = True)
-    location_id = LocationMasterSerializer(read_only = True)
+    location_id = serializers.IntegerField(source = "court.location.location_Id" , read_only = True)
 
     class Meta:
         model = HolidayMaster

@@ -358,8 +358,14 @@ class AdminSlotView(APIView):
                 "status": "failed",
                 "statusCode": status.HTTP_401_UNAUTHORIZED
             })
-            
-        slot = SlotMaster.objects.all()
+        court_id = request.query_params.get('court_id', None)
+        if court_id is None:
+                return Response({
+                "status": "failed",
+                "statusCode": status.HTTP_404_NOT_FOUND,
+                "data": "Court No Required"
+            })
+        slot = SlotMaster.objects.filter(court__court_Id = court_id)
         serialized_data = SlotMasterSerializer(slot , many=True)
         return Response({
                 "data": serialized_data.data,
@@ -424,6 +430,48 @@ class AdminCourtHolidayView(APIView):
                 "statusCode":status.HTTP_200_OK
                 ,"data":HolidayMasterSerializer(holidays , many=True).data
             })
+            
+    def post(self, request, *args, **kwargs):
+       
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+
+        is_user_admin = UserMaster.objects.filter(reg_id=user.reg_id, user_type__id=2).exists()
+        if not is_user_admin:
+            return Response({
+                "data": "User not valid or not admin",
+                "status": "failed",
+                "statusCode": status.HTTP_401_UNAUTHORIZED
+            })
+            
+        court_id = request.data.get("court_id" , None)
+        date = request.data.get("date" , None)
+        isTournament = request.data.get("isTournament") 
+        remark = request.data.get("remark")
+        if court_id is not None and date is not None :
+            court = CourtMaster.objects.get(court_Id = court_id)
+            if court is None:
+                return Response({
+                    "data":"Court Id Not Available",
+                    "status":"failed",
+                    "statusCode":status.HTTP_400_BAD_REQUEST
+                })
+            holiday = HolidayMaster.objects.create(
+                court = court,
+                holiday_date = date,
+                isTournament = isTournament,
+                Remarks = remark,
+                location_id = court.location
+            )
+            
+            return Response({
+                "data":HolidayMasterSerializer(holiday).data,
+                "status":"success",
+                "statusCode":status.HTTP_200_OK
+            })
+
+      
             
         
             

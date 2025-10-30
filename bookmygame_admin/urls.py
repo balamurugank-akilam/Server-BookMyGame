@@ -25,5 +25,6 @@ urlpatterns = [
     path("admin-court",views.AdminCourtView.as_view() , name="admin-court"),
     path("admin-slot/",views.AdminSlotView.as_view(), name="admin-slot"),
     path("admin-court-holiday/",views.AdminCourtHolidayView.as_view() , name="admin-court-holiday"),
-    path("admin-bookedSlot-check/",views.AdminCourtBookedSlotsCheck.as_view() , name="admin-bookedSlot-check")
+    path("admin-bookedSlot-check/",views.AdminCourtBookedSlotsCheck.as_view() , name="admin-bookedSlot-check"),
+    
 ] 

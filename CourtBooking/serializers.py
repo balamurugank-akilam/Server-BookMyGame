@@ -211,7 +211,7 @@ class SlotMasterSerializer(serializers.ModelSerializer):
             'slot_Id', 'slot_Name', 'IsPeak', 'IsActive', 
             'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
             'created_By', 'created_Date', 'updated_By', 'updated_Date',
-            'court_name', 'session_name' ,"court_id"
+            'court_name', 'session_name' ,"court_id","IsMember"
         ]
         extra_fields =['session_name']
         
