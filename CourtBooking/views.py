@@ -140,10 +140,11 @@ class CourtSelectionView(APIView):
             return error_response
         user_id = request.query_params.get('user' , None)
         location_city = request.query_params.get('location',None)
+        sport_id = request.query_params.get("sport_id",None)
 
         courts = CourtMaster.objects.filter(flag=True)
         if user_id is not None and location_city is not None:
-            courts = courts.filter(location__city__icontains=location_city , user=user_id ,)
+            courts = courts.filter(location__city__icontains=location_city , user=user_id , location__sport__sport_id = sport_id)
 
             if not courts.exists():
                 return Response({
