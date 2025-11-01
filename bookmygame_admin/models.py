@@ -27,3 +27,36 @@ class HolidayMaster(models.Model):
 
     def __str__(self):
         return f"{self.holiday_date} - {self.leave_Type}"
+    
+
+
+
+class MembershipMaster(models.Model):
+    mem_Id = models.AutoField(primary_key=True, db_column='mem_Id')
+    mem_Name = models.CharField(max_length=255, db_column='mem_Name')
+    mem_Mobile = models.CharField(max_length=15, db_column='mem_Mobile')
+    mem_Fees = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, db_column='mem_Fees')
+    mem_Proof = models.CharField(max_length=255, null=True, blank=True, db_column='mem_Proof')
+    mem_Password = models.CharField(max_length=255, db_column='mem_Password')
+    mem_paymentMode = models.CharField(max_length=50, null=True, blank=True, db_column='mem_paymentMode')
+    mem_Court = models.CharField(max_length=255, null=True, blank=True, db_column='mem_Court')
+    mem_DOJ = models.DateField(null=True, blank=True, db_column='mem_DOJ')
+    mem_PendingFee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, db_column='mem_PendingFee')
+    mem_Photo = models.ImageField(upload_to='member_photos/', null=True, blank=True, db_column='mem_Photo')
+    mem_Location = models.CharField(max_length=255, null=True, blank=True, db_column='mem_Location')
+    memstart_Time = models.TimeField(null=True, blank=True, db_column='memstart_Time')
+    memend_Time = models.TimeField(null=True, blank=True, db_column='memend_Time')
+    mem_Remarks = models.TextField(null=True, blank=True, db_column='mem_Remarks')
+    active_Flag = models.BooleanField(default=True, db_column='active_Flag')
+    created_By = models.CharField(max_length=255, null=True, blank=True, db_column='created_By')
+    created_Date = models.DateTimeField(auto_now_add=True, db_column='created_Date')
+    modified_By = models.CharField(max_length=255, null=True, blank=True, db_column='modified_By')
+    modified_Date = models.DateTimeField(auto_now=True, db_column='modified_Date')
+
+    class Meta:
+        db_table = 'membership_Master'
+        verbose_name = 'Membership Master'
+        verbose_name_plural = 'Membership Masters'
+
+    def __str__(self):
+        return f"{self.mem_Name} ({self.mem_Mobile})"

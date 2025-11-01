@@ -16,7 +16,8 @@ urlpatterns = [
   path('user-bookedslotView/',views.SeprateUserBookedSlot.as_view(), name='user-bookedSlotView'),
   path('confirm-booking',views.confirm_booking , name='confirm-booking'),
   path('cancel-booking/',views.cancel_booking , name='cancel-booking'),
-  path("slot-holiday-check/",views.SlotHolidayCheck , name="slot-holiday-check")
+  path("slot-holiday-check/",views.SlotHolidayCheck , name="slot-holiday-check"),
+
   
     
 ]

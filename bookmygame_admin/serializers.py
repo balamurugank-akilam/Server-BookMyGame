@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import HolidayMaster
+from .models import HolidayMaster,MembershipMaster
 from CourtBooking.models import CourtMaster  ,SlotMaster
-from CourtBooking.serializers import CourtMasterSerializer , LocationMasterSerializer
+from CourtBooking.serializers import CourtMasterSerializer , LocationMasterSerializer 
+
 
 
 
@@ -24,3 +25,32 @@ class HolidayMasterSerializer(serializers.ModelSerializer):
             "isTournament",
        
         ]
+
+
+
+class MembershipMasterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MembershipMaster
+        fields = [
+            'mem_Id',
+            'mem_Name',
+            'mem_Mobile',
+            'mem_Fees',
+            'mem_Proof',
+            'mem_Password',
+            'mem_paymentMode',
+            'mem_Court',
+            'mem_DOJ',
+            'mem_PendingFee',
+            'mem_Photo',
+            'mem_Location',
+            'memstart_Time',
+            'memend_Time',
+            'mem_Remarks',
+            'active_Flag',
+            'created_By',
+            'created_Date',
+            'modified_By',
+            'modified_Date',
+        ]
+        read_only_fields = ['mem_Id', 'created_Date', 'modified_Date']

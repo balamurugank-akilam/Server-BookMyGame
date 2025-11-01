@@ -9,8 +9,8 @@ from CourtBooking.serializers import LocationMasterDetailSerializer , CourtMaste
 from rest_framework import status
 from django.apps import apps
 from app_task import CreateTimeslots
-from .models import HolidayMaster
-from .serializers import HolidayMasterSerializer
+from .models import HolidayMaster,MembershipMaster
+from .serializers import HolidayMasterSerializer , MembershipMasterSerializer
 
 # Create your views here.
 
@@ -512,3 +512,30 @@ class AdminCourtBookedSlotsCheck(APIView):
             })
                 
         
+        
+        
+        
+class AdminMemberListView(APIView):
+    def get(self, request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+    
+        is_user_admin = UserMaster.objects.filter(reg_id=user.reg_id, user_type__id=2).exists()
+        if not is_user_admin:
+            return Response({
+                "data": "User not valid or not admin",
+                "status": "failed",
+                "statusCode": status.HTTP_401_UNAUTHORIZED
+            })
+            
+        members = MembershipMaster.objects.all()
+        return Response({
+            "data":MembershipMasterSerializer(members).data,
+            "status":"success",
+            
+        }, status=status.HTTP_200_OK)
+            
+        
+            
+    

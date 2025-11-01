@@ -169,9 +169,24 @@ class Slotview(APIView):
         if error_response:
             return error_response
         
+        court_id = request.query_params.get('court_id', None)
+        is_user_member = UserMaster.objects.filter(reg_id=user.reg_id, user_type__id=7).exists()
+        if is_user_member:
+            slot_view = SlotMaster.objects.filter(court__court_Id = court_id , IsActive = True ,IsMember = True)
+            print(slot_view)
+            serialized_data = SlotMasterSerializer(slot_view , many = True)
+            
+            return Response({
+                     "status": "success",
+                     "statusCode": status.HTTP_200_OK,
+                     "data":serialized_data.data,
+                   
+                    })
+            
+        
         # user_id = request.query_params.get('user' , None)
         # location_Id = request.query_params.get('location_Id',None)
-        court_id = request.query_params.get('court_id', None)
+      
         # date = request.query_params.get('date', None)
         
         
