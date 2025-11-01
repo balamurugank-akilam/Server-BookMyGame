@@ -449,7 +449,16 @@ class AdminCourtHolidayView(APIView):
         date = request.data.get("date" , None)
         isTournament = request.data.get("isTournament") 
         remark = request.data.get("remark")
+        
+        
         if court_id is not None and date is not None :
+            booked_slot = BookingMaster.objects.filter(court__court_Id = court_id , book_Date = date)
+            if booked_slot:
+                return Response({
+                    "data": "The selected date already has booked slots. Please try another date.",
+                    "status":"failed",
+                    "statusCode":status.HTTP_400_BAD_REQUEST
+                },status=status.HTTP_400_BAD_REQUEST)
             court = CourtMaster.objects.get(court_Id = court_id)
             if court is None:
                 return Response({
